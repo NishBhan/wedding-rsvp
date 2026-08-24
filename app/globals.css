@@ -302,10 +302,10 @@ body {
 .eyebrow {
   text-align: center;
   font-family: var(--font-label), Georgia, serif;
-  letter-spacing: 0.32em;
-  font-size: 11px;
+  letter-spacing: 0.3em;
+  font-size: 15px;
   text-transform: uppercase;
-  color: var(--gold);
+  color: #8a6a2f;
   margin: 0 0 8px;
 }
 

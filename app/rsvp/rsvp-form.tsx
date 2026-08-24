@@ -193,7 +193,6 @@ export default function RsvpForm() {
             <TulipMotif />
           </div>
           <img src="/monogram.png" alt="" className="step-monogram" />
-          <p className="eyebrow">RSVP</p>
           <h1>We&apos;d love to know if you can join us.</h1>
           <p className="subtitle">
             Just a heads up so we can start planning &mdash; not a final answer.
