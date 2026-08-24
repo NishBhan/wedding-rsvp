@@ -20,7 +20,8 @@ body {
 body {
   background: var(--cream);
   color: var(--ink-dark);
-  font-family: var(--font-body), Georgia, serif;
+  font-family: var(--font-heading), Georgia, serif;
+  font-weight: 500;
   min-height: 100vh;
 }
 
@@ -138,8 +139,9 @@ body {
 }
 
 .hero-names .amp {
-  font-style: italic;
-  font-size: 0.7em;
+  font-family: var(--font-script), cursive;
+  font-style: normal;
+  font-size: 0.62em;
   color: var(--gold);
   letter-spacing: 0;
 }
@@ -360,7 +362,7 @@ input[type="text"],
 textarea {
   width: 100%;
   padding: 10px 12px;
-  font-family: var(--font-body), Georgia, serif;
+  font-family: var(--font-heading), Georgia, serif;
   font-size: 16px;
   border: 1px solid var(--line);
   border-radius: 2px;
@@ -430,7 +432,7 @@ textarea:focus {
   margin: 20px auto 0;
   background: none;
   border: none;
-  font-family: var(--font-body), Georgia, serif;
+  font-family: var(--font-heading), Georgia, serif;
   font-size: 16px;
   font-style: italic;
   text-transform: none;
@@ -606,7 +608,7 @@ button {
   color: var(--cream);
   border: none;
   border-radius: 2px;
-  font-family: var(--font-body), Georgia, serif;
+  font-family: var(--font-heading), Georgia, serif;
   font-size: 16px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
