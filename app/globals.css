@@ -192,8 +192,9 @@ body {
   margin: 6px 0 0;
   font-family: var(--font-label), Georgia, serif;
   font-size: clamp(20px, 5.4vw, 44px);
-  letter-spacing: 0.2em;
+  letter-spacing: 0.16em;
   color: var(--ink);
+  -webkit-text-stroke: 0.6px var(--ink);
 }
 
 .hero-location {
