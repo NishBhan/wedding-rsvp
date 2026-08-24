@@ -15,16 +15,15 @@ export async function submitRsvp(
   const attending = formData.get("attending") === "yes";
   const plusOne = formData.get("plusOne") === "yes";
   const plusOneName = String(formData.get("plusOneName") || "").trim();
-  const dietaryNotes = String(formData.get("dietaryNotes") || "").trim();
 
   if (!name) {
-    return { status: "error", message: "Please enter your name." };
+    return { status: "error", message: "Please enter your name so we know who is replying." };
   }
 
   if (attending && plusOne && !plusOneName) {
     return {
       status: "error",
-      message: "Please enter your plus one's name, or switch plus one to no.",
+      message: "We just need a name for them — you can change it later.",
     };
   }
 
@@ -35,7 +34,6 @@ export async function submitRsvp(
     attending,
     plus_one: attending ? plusOne : false,
     plus_one_name: attending && plusOne ? plusOneName : null,
-    dietary_notes: dietaryNotes || null,
   });
 
   if (error) {

@@ -1,11 +1,10 @@
 import RsvpForm from "./rsvp-form";
+import SiteShell from "../components/site-shell";
 
 export default function RsvpPage() {
   return (
-    <div className="page">
-      <div className="card">
-        <RsvpForm />
-      </div>
-    </div>
+    <SiteShell>
+      <RsvpForm />
+    </SiteShell>
   );
 }

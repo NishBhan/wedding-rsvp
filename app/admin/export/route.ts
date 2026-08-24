@@ -29,7 +29,6 @@ export async function GET() {
     "Attending",
     "Plus One",
     "Plus One Name",
-    "Dietary Notes",
     "Submitted At",
   ];
 
@@ -39,7 +38,6 @@ export async function GET() {
       r.attending ? "Yes" : "No",
       r.plus_one ? "Yes" : "No",
       r.plus_one_name ?? "",
-      r.dietary_notes ?? "",
       r.submitted_at,
     ]
       .map((v) => csvEscape(String(v)))
