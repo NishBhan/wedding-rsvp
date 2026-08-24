@@ -23,11 +23,11 @@ const petitFormalScript = Petit_Formal_Script({
 const siteUrl = "https://wedding-rsvp-three-rouge.vercel.app";
 
 export const metadata: Metadata = {
-  title: "Nishtha & Wouter | RSVP",
-  description: "RSVP for the wedding of Nishtha and Wouter, 14-15 November 2027",
+  title: "FishfoundherWater| Wedding",
+  description: "Everything you need for Nishtha & Wouter's wedding - 14-15th November 2027",
   openGraph: {
-    title: "Nishtha & Wouter | RSVP",
-    description: "We'd love to know if you can join us — 14–15 November 2027, Bengaluru.",
+    title: "FishfoundherWater| Wedding",
+    description: "Everything you need for Nishtha & Wouter's wedding - 14-15th November 2027",
     url: siteUrl,
     siteName: "Nishtha & Wouter",
     images: [
@@ -41,8 +41,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Nishtha & Wouter | RSVP",
-    description: "We'd love to know if you can join us — 14–15 November 2027, Bengaluru.",
+    title: "FishfoundherWater| Wedding",
+    description: "Everything you need for Nishtha & Wouter's wedding - 14-15th November 2027",
     images: [`${siteUrl}/og-image.png`],
   },
 };
