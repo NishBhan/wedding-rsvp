@@ -1,8 +1,9 @@
 "use client";
 
 import { useFormState, useFormStatus } from "react-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { submitRsvp, RsvpState } from "./actions";
+import { checkExistingRsvp, removeSelfAsPlusOne, ExistingMatch } from "./lookup-actions";
 import OrnamentDivider from "../components/ornament-divider";
 import CalendarCheckIcon from "../components/calendar-check-icon";
 import { downloadWeddingIcs } from "@/lib/calendar";
@@ -92,6 +93,25 @@ export default function RsvpForm() {
   const [plusOneName, setPlusOneName] = useState("");
   const [weddingSaved, setWeddingSaved] = useState(false);
 
+  // "You're already on the list" detection while typing on the name step.
+  const [existingId, setExistingId] = useState<string | null>(null);
+  const [match, setMatch] = useState<ExistingMatch | null>(null);
+  const [matchDismissed, setMatchDismissed] = useState(false);
+  const [plusOneResolution, setPlusOneResolution] = useState<
+    "none" | "still-coming" | "removed"
+  >("none");
+  const [keptAnswer, setKeptAnswer] = useState(false);
+
+  useEffect(() => {
+    if (step !== "name" || matchDismissed) return;
+    const handle = setTimeout(() => {
+      checkExistingRsvp(name).then((result) => {
+        setMatch(result.kind === "none" ? null : result);
+      });
+    }, 500);
+    return () => clearTimeout(handle);
+  }, [name, step, matchDismissed]);
+
   const goToStep = (next: Step) => {
     setStep(next);
     if (typeof window !== "undefined") window.scrollTo(0, 0);
@@ -106,7 +126,110 @@ export default function RsvpForm() {
     goToStep("attend");
   };
 
+  const updateMyAnswer = () => {
+    if (!match || match.kind !== "primary") return;
+    setExistingId(match.id);
+    setAttending(match.attending ? "yes" : "no");
+    setPlusOne(match.plusOne ? "yes" : "no");
+    setPlusOneName(match.plusOneName || "");
+    setMatchDismissed(true);
+    goToStep("attend");
+  };
+
+  const keepMyAnswer = () => {
+    setMatchDismissed(true);
+    setKeptAnswer(true);
+  };
+
   const firstName = name.trim().split(" ")[0] || "";
+
+  if (keptAnswer) {
+    return (
+      <div className="rsvp-section confirmation">
+        <img src="/assets/monogram-mark.png" alt="" className="monogram" />
+        <h1>You&apos;re all set.</h1>
+        <p>We already have your answer — no need to do anything else. You can close this.</p>
+      </div>
+    );
+  }
+
+  // --- "You're already down as {name}'s plus-one" branch ---
+  if (
+    step === "name" &&
+    match &&
+    match.kind === "plus_one" &&
+    !matchDismissed &&
+    plusOneResolution === "none"
+  ) {
+    const primaryFirstName = match.primaryName.split(" ")[0];
+    return (
+      <div className="rsvp-section">
+        <div className="motif-row">
+          <PairMotif />
+        </div>
+        <img src="/assets/monogram-mark.png" alt="" className="step-monogram" />
+        <h1>Looks like you&apos;re already on the list.</h1>
+        <p className="subtitle">
+          You&apos;re down as {match.primaryName}&apos;s plus-one, and{" "}
+          {match.attending
+            ? `${primaryFirstName} said they'll be there.`
+            : `${primaryFirstName} said they can't make it.`}
+        </p>
+        <div className="response-group" style={{ marginTop: "clamp(28px,5vw,40px)", textAlign: "left" }}>
+          <button
+            type="button"
+            className="response-option-btn"
+            onClick={() => setPlusOneResolution("still-coming")}
+          >
+            Still coming with them
+          </button>
+          <button
+            type="button"
+            className="response-option-btn outline"
+            onClick={async () => {
+              await removeSelfAsPlusOne(match.primaryId);
+              setPlusOneResolution("removed");
+            }}
+          >
+            Actually, I can&apos;t make it
+          </button>
+        </div>
+        <button
+          type="button"
+          className="link-back"
+          onClick={() => {
+            setMatchDismissed(true);
+            setMatch(null);
+          }}
+        >
+          That&apos;s not me — I have a different name
+        </button>
+      </div>
+    );
+  }
+
+  if (plusOneResolution === "still-coming") {
+    return (
+      <div className="rsvp-section confirmation">
+        <img src="/assets/monogram-mark.png" alt="" className="monogram" />
+        <h1>Wonderful — see you there!</h1>
+        <p>You&apos;re all set. No need to do anything else — you can close this.</p>
+      </div>
+    );
+  }
+
+  if (plusOneResolution === "removed") {
+    return (
+      <div className="rsvp-section confirmation">
+        <img src="/assets/monogram-mark.png" alt="" className="monogram" />
+        <h1>Thanks for letting us know.</h1>
+        <p>
+          We&apos;ve updated {match && match.kind === "plus_one" ? match.primaryName : "their"}
+          {"'"}s RSVP. You&apos;re all set — you can close this.
+        </p>
+      </div>
+    );
+  }
 
   // --- Post-submit confirmation ---
   if (state.status === "success") {
@@ -122,7 +245,10 @@ export default function RsvpForm() {
             ? "We're so excited to celebrate with you!"
             : "Thank you for letting us know."}
         </h1>
-        <div className="hero-dates" style={{ fontSize: "clamp(52px,14vw,110px)", margin: "22px 0 0" }}>
+        <div
+          className="hero-dates"
+          style={{ fontSize: "clamp(52px,14vw,110px)", margin: "22px 0 0", animation: "none" }}
+        >
           14<span className="dash">&ndash;</span>15
         </div>
         <div className="hero-month" style={{ margin: "6px 0 0", animation: "none" }}>NOVEMBER 2027</div>
@@ -182,6 +308,7 @@ export default function RsvpForm() {
       {(step === "plus" || step === "decline") && (
         <input type="hidden" name="attending" value={attending} />
       )}
+      {existingId && <input type="hidden" name="existingId" value={existingId} />}
 
       <div className="motif-row">
         {step === "name" && <TulipMotif />}
@@ -206,7 +333,11 @@ export default function RsvpForm() {
               id="name"
               className="rsvp-input"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value);
+                setMatchDismissed(false);
+                setExistingId(null);
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
@@ -220,6 +351,27 @@ export default function RsvpForm() {
             />
             {nameError && <p className="rsvp-error">{nameError}</p>}
           </div>
+
+          {match && match.kind === "primary" && !matchDismissed && (
+            <div className="match-banner">
+              <p>
+                Looks like <strong>{match.name}</strong> already responded —{" "}
+                {match.attending ? "you said you'll be there" : "you said you can't make it"}
+                {match.attending && match.plusOne
+                  ? `, with ${match.plusOneName || "a plus-one"}`
+                  : ""}
+                . Want to change it?
+              </p>
+              <div className="match-banner-actions">
+                <button type="button" className="link-back match-banner-link" onClick={updateMyAnswer}>
+                  Yes, update it
+                </button>
+                <button type="button" className="link-back match-banner-link" onClick={keepMyAnswer}>
+                  No, that&apos;s correct
+                </button>
+              </div>
+            </div>
+          )}
 
           <button type="button" className="btn-primary" onClick={submitName}>
             Continue

@@ -659,6 +659,51 @@ input[type="text"].rsvp-input:focus {
   color: #9a5b3d;
 }
 
+.match-banner {
+  margin-top: 22px;
+  padding: 20px 20px 18px;
+  text-align: left;
+  background: rgba(176, 141, 79, 0.08);
+  border-left: 2px solid var(--gold);
+}
+
+.match-banner p {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.55;
+  color: #3a4d6b;
+}
+
+.match-banner p strong {
+  color: var(--ink-dark);
+  font-weight: 600;
+}
+
+.match-banner-actions {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+}
+
+.match-banner-actions .match-banner-link {
+  display: inline;
+  margin: 0;
+  font-size: 16px;
+}
+
+.match-banner-actions .match-banner-link:first-child {
+  color: var(--ink);
+  font-style: normal;
+  text-decoration: underline;
+  text-decoration-color: rgba(176, 141, 79, 0.6);
+  text-underline-offset: 3px;
+}
+
+.match-banner-actions .match-banner-link:first-child:hover {
+  color: var(--gold);
+}
+
 .response-option-btn {
   display: block;
   width: 100%;
