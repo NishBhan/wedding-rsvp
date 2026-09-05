@@ -24,7 +24,7 @@ export default async function AdminPage({
           <h1 style={{ fontSize: 24 }}>RSVP dashboard</h1>
           <div>
             <label htmlFor="password">Password</label>
-            <input type="text" id="password" name="password" required />
+            <input type="password" id="password" name="password" required />
           </div>
           {searchParams.error && (
             <p className="error">Wrong password. Try again.</p>
