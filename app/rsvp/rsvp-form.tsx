@@ -271,10 +271,10 @@ export default function RsvpForm() {
             <div className="details-panel">
               <div className="details-panel-label">YOU DON&rsquo;T NEED TO FIGURE OUT THE REST JUST YET</div>
               <p>
-                We&rsquo;ll send the full details closer to the date, including the agenda,
-                accommodation, transport, dress guidance and everything else you&rsquo;ll need.
-                For now, there&rsquo;s no need to worry about the details - we&rsquo;ll make
-                sure you have everything you need to plan your time with us in Bengaluru.
+                The full agenda, along with accommodation, transport and dress guidance, is
+                coming soon, so there&rsquo;s no need to book your travel just yet. If
+                you&rsquo;re thinking of extending your trip into a longer holiday, we&rsquo;re
+                happy to connect you with a travel desk to help plan it.
               </p>
             </div>
             <div className="calendar-link-row">
