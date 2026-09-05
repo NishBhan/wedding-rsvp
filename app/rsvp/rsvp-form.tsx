@@ -3,23 +3,26 @@
 import { useFormState, useFormStatus } from "react-dom";
 import { useState } from "react";
 import { submitRsvp, RsvpState } from "./actions";
+import OrnamentDivider from "../components/ornament-divider";
+import CalendarCheckIcon from "../components/calendar-check-icon";
+import { downloadWeddingIcs } from "@/lib/calendar";
 
 const initialState: RsvpState = { status: "idle" };
 
 type Step = "name" | "attend" | "plus" | "decline";
 
-function SubmitButton({ label }: { label: string }) {
+function SubmitButton() {
   const { pending } = useFormStatus();
   return (
     <button type="submit" className="btn-primary" disabled={pending}>
-      {pending ? "Sending..." : label}
+      {pending ? "Sending..." : "Send my RSVP"}
     </button>
   );
 }
 
 function TulipMotif() {
   return (
-    <svg width="52" height="52" viewBox="0 0 70 70" className="motif" aria-hidden="true">
+    <svg width="62" height="62" viewBox="0 0 70 70" className="motif" aria-hidden="true">
       <g fill="none" stroke="#1B3A6B" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
         <path d="M35 64 V30" />
         <path
@@ -37,7 +40,7 @@ function TulipMotif() {
 
 function PairMotif() {
   return (
-    <svg width="52" height="52" viewBox="0 0 70 70" className="motif" aria-hidden="true">
+    <svg width="62" height="62" viewBox="0 0 70 70" className="motif" aria-hidden="true">
       <g fill="none" stroke="#1B3A6B" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
         <path d="M24 64 C24 44 20 36 20 28M46 64 C46 44 50 36 50 28" />
         <path
@@ -59,7 +62,7 @@ function PairMotif() {
 
 function LotusMotif() {
   return (
-    <svg width="52" height="52" viewBox="0 0 70 70" className="motif" aria-hidden="true">
+    <svg width="62" height="62" viewBox="0 0 70 70" className="motif" aria-hidden="true">
       <g fill="none" stroke="#1B3A6B" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
         <path d="M35 54 C31 42 32 30 35 22 C38 30 39 42 35 54 Z" fill="#1B3A6B" fillOpacity=".12" />
         <path d="M35 54 C25 47 20 38 18 28 C27 31 33 42 35 54 Z" fill="#1B3A6B" fillOpacity=".07" />
@@ -72,55 +75,12 @@ function LotusMotif() {
   );
 }
 
-function VineDivider() {
-  return (
-    <svg
-      width="100%"
-      height="40"
-      viewBox="0 0 900 46"
-      preserveAspectRatio="xMidYMid slice"
-      className="vine-divider"
-      aria-hidden="true"
-    >
-      <defs>
-        <pattern id="nwvineB" width="150" height="46" patternUnits="userSpaceOnUse">
-          <g fill="none" stroke="#1B3A6B" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M0 38 C18 38 24 30 37 30 C50 30 56 38 75 38 C94 38 100 30 113 30 C126 30 132 38 150 38" />
-            <path d="M37 30 V16" />
-            <path
-              d="M31 16 C30 9 33 4 37 2 C41 4 44 9 43 16 C41 19 33 19 31 16 Z"
-              fill="#1B3A6B"
-              fillOpacity=".16"
-            />
-            <path d="M37 3 V17M31.5 15 C29 10 30 6 32 4M42.5 15 C45 10 44 6 42 4" />
-            <path d="M37 27 C31 26 27 22 26 18M37 27 C43 26 47 22 48 18" />
-            <path
-              d="M113 29 C110 22 111 16 113 12 C115 16 116 22 113 29 Z"
-              fill="#1B3A6B"
-              fillOpacity=".16"
-            />
-            <path
-              d="M113 29 C106 25 103 20 102 15 C107 17 111 22 113 29 Z"
-              fill="#1B3A6B"
-              fillOpacity=".1"
-            />
-            <path
-              d="M113 29 C120 25 123 20 124 15 C119 17 115 22 113 29 Z"
-              fill="#1B3A6B"
-              fillOpacity=".1"
-            />
-            <path d="M113 29 C104 27 99 24 96 21M113 29 C122 27 127 24 130 21" />
-            <circle cx="75" cy="30" r="2.2" fill="#B08D4F" stroke="none" />
-            <path d="M69 33 C71 31 73 30 75 30M81 33 C79 31 77 30 75 30" />
-            <circle cx="55" cy="20" r="1.3" fill="#1B3A6B" stroke="none" />
-            <circle cx="95" cy="20" r="1.3" fill="#1B3A6B" stroke="none" />
-          </g>
-        </pattern>
-      </defs>
-      <rect width="900" height="46" fill="url(#nwvineB)" />
-    </svg>
-  );
-}
+const PROGRESS_LABEL: Record<Step, string> = {
+  name: "RSVP · Step 1 of 3",
+  attend: "RSVP · Step 2 of 3",
+  plus: "RSVP · Step 3 of 3",
+  decline: "",
+};
 
 export default function RsvpForm() {
   const [state, formAction] = useFormState(submitRsvp, initialState);
@@ -130,6 +90,7 @@ export default function RsvpForm() {
   const [attending, setAttending] = useState<"yes" | "no" | "">("");
   const [plusOne, setPlusOne] = useState<"yes" | "no" | "">("");
   const [plusOneName, setPlusOneName] = useState("");
+  const [weddingSaved, setWeddingSaved] = useState(false);
 
   const goToStep = (next: Step) => {
     setStep(next);
@@ -145,33 +106,68 @@ export default function RsvpForm() {
     goToStep("attend");
   };
 
+  const firstName = name.trim().split(" ")[0] || "";
+
   // --- Post-submit confirmation ---
   if (state.status === "success") {
+    const isAttending = attending === "yes";
+    const hasPlusOne = isAttending && plusOne === "yes";
+
     return (
       <div className="rsvp-section confirmation">
-        <VineDivider />
-        <img src="/monogram.png" alt="" className="monogram" />
-        {attending === "yes" ? (
+        <OrnamentDivider />
+        <img src="/assets/monogram-mark.png" alt="" className="monogram" />
+        <h1>
+          {isAttending
+            ? "We're so excited to celebrate with you!"
+            : "Thank you for letting us know."}
+        </h1>
+        <div className="hero-dates" style={{ fontSize: "clamp(52px,14vw,110px)", margin: "22px 0 0" }}>
+          14<span className="dash">&ndash;</span>15
+        </div>
+        <div className="hero-month" style={{ margin: "6px 0 0", animation: "none" }}>NOVEMBER 2027</div>
+        <div className="hero-location" style={{ margin: "20px 0 0", animation: "none" }}>BENGALURU, INDIA</div>
+        <p>
+          {isAttending
+            ? `Thank you, ${firstName || "friend"} — your place is saved.`
+            : "We’ll miss having you with us in Bengaluru, but completely understand. Thank you for telling us early."}
+        </p>
+
+        {hasPlusOne && (
+          <div className="joining-panel">
+            <span className="joining-label">JOINING YOU</span>
+            <div className="joining-name">{plusOneName.trim() || "Name to be confirmed"}</div>
+          </div>
+        )}
+
+        {isAttending && (
           <>
-            <p className="eyebrow">With our love</p>
-            <h1>We&apos;re so excited to celebrate with you!</h1>
-            <p>
-              You don&apos;t need to figure out the rest just yet. We&apos;ll
-              send the formal invitation closer to the wedding to know if
-              anything has changed, with the full agenda, recommended
-              arrival dates, accommodation, transport, dress guidance and
-              everything else you&apos;ll need.
-            </p>
-          </>
-        ) : (
-          <>
-            <p className="eyebrow">Thank you for telling us</p>
-            <h1>We understand!</h1>
-            <p>
-              Thank you for telling us this early &mdash; it genuinely
-              helps. We would have loved to see you there, but we&apos;ll
-              raise a glass to you in Bengaluru.
-            </p>
+            <div className="details-panel">
+              <div className="details-panel-label">YOU DON&rsquo;T NEED TO FIGURE OUT THE REST JUST YET</div>
+              <p>
+                We&rsquo;ll send a formal invitation with the full agenda, accommodation,
+                transport, dress guidance and everything else you&rsquo;ll need. For now,
+                there&rsquo;s no need to worry about the details - we&rsquo;ll make sure you
+                have everything you need to plan your time with us in Bengaluru.
+              </p>
+            </div>
+            <div className="calendar-link-row">
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  downloadWeddingIcs();
+                  setWeddingSaved(true);
+                }}
+                className="calendar-link"
+              >
+                Add the wedding to my calendar
+                <CalendarCheckIcon />
+              </a>
+            </div>
+            {weddingSaved && (
+              <p className="saved-note">Saved — 14 to 16 November 2027 are held in your calendar.</p>
+            )}
           </>
         )}
       </div>
@@ -187,23 +183,28 @@ export default function RsvpForm() {
         <input type="hidden" name="attending" value={attending} />
       )}
 
+      <div className="motif-row">
+        {step === "name" && <TulipMotif />}
+        {(step === "attend" || step === "decline") && <PairMotif />}
+        {step === "plus" && <LotusMotif />}
+        {PROGRESS_LABEL[step] && <div className="rsvp-progress">{PROGRESS_LABEL[step]}</div>}
+      </div>
+
       {step === "name" && (
         <div className="rsvp-section">
-          <div className="motif-row">
-            <TulipMotif />
-          </div>
-          <img src="/monogram.png" alt="" className="step-monogram" />
+          <img src="/assets/monogram-mark.png" alt="" className="step-monogram" />
           <h1>We&apos;d love to know if you can join us.</h1>
-          <p className="subtitle">
-            Just a heads up so we can start planning &mdash; not a final answer.
-          </p>
+          <p className="subtitle">14&ndash;15 November 2027, Bengaluru, India.</p>
 
           <div className="name-field">
-            <label htmlFor="name">Your name</label>
-            <p className="field-hint">As you&apos;d like it to appear on the formal invite.</p>
+            <label htmlFor="name" className="rsvp-label">
+              Your name
+            </label>
+            <p className="rsvp-hint">As you&apos;d like it to appear on the formal invite.</p>
             <input
               type="text"
               id="name"
+              className="rsvp-input"
               value={name}
               onChange={(e) => setName(e.target.value)}
               onKeyDown={(e) => {
@@ -213,8 +214,11 @@ export default function RsvpForm() {
                 }
               }}
               placeholder="e.g. Anjali Rao"
+              autoComplete="off"
+              autoCapitalize="words"
+              spellCheck={false}
             />
-            {nameError && <p className="error">{nameError}</p>}
+            {nameError && <p className="rsvp-error">{nameError}</p>}
           </div>
 
           <button type="button" className="btn-primary" onClick={submitName}>
@@ -225,16 +229,10 @@ export default function RsvpForm() {
 
       {step === "attend" && (
         <div className="rsvp-section">
-          <div className="motif-row">
-            <PairMotif />
-          </div>
-          <p className="eyebrow">Hello, {name.split(" ")[0] || "there"}</p>
-          <h1>How is it looking?</h1>
-          <p className="subtitle">
-            14&ndash;15 November 2027, Bengaluru. We will not count this as
-            your final confirmation, but it helps us plan logistics!
-          </p>
-          <div className="response-group">
+          <p className="eyebrow">{firstName ? `Hello, ${firstName}` : "Hello"}</p>
+          <h1>Will you be there?</h1>
+          <p className="subtitle">14&ndash;15 November 2027, Bengaluru, India</p>
+          <div className="response-group" style={{ marginTop: "clamp(30px,5vw,42px)", textAlign: "left" }}>
             <button
               type="button"
               className="response-option-btn"
@@ -243,7 +241,7 @@ export default function RsvpForm() {
                 goToStep("plus");
               }}
             >
-              Yes, count me in!
+              Yes! I&apos;ll be there
             </button>
             <button
               type="button"
@@ -254,14 +252,11 @@ export default function RsvpForm() {
                 goToStep("decline");
               }}
             >
-              I already know I can&apos;t make it
+              I&apos;m sorry, I can&apos;t make it
             </button>
           </div>
-          <button
-            type="button"
-            className="link-back"
-            onClick={() => goToStep("name")}
-          >
+          <p className="rsvp-fine-note">If you&apos;re bringing someone, you can add them next.</p>
+          <button type="button" className="link-back" onClick={() => goToStep("name")}>
             Go back
           </button>
         </div>
@@ -269,12 +264,7 @@ export default function RsvpForm() {
 
       {step === "plus" && (
         <div className="rsvp-section">
-          <div className="motif-row">
-            <LotusMotif />
-          </div>
-          <p className="eyebrow">Your party</p>
-          <h1>Bringing someone with you?</h1>
-          <p className="subtitle plus-subtitle">Your invitation includes one guest.</p>
+          <h1 className="plus-one-heading">Bringing a plus one?</h1>
 
           <div className="plus-one-grid">
             <label className="plus-one-option">
@@ -285,7 +275,7 @@ export default function RsvpForm() {
                 checked={plusOne === "yes"}
                 onChange={() => setPlusOne("yes")}
               />
-              <span>{plusOne === "yes" ? "\u2713 YES" : "YES"}</span>
+              <span>{plusOne === "yes" ? "✓  Yes" : "Yes"}</span>
             </label>
             <label className="plus-one-option">
               <input
@@ -304,26 +294,26 @@ export default function RsvpForm() {
 
           {plusOne === "yes" && (
             <div className="plus-one-name-field">
-              <label htmlFor="plusOneName">Their name</label>
+              <label htmlFor="plusOneName" className="rsvp-label">
+                Their name
+              </label>
               <input
                 type="text"
                 id="plusOneName"
                 name="plusOneName"
+                className="rsvp-input"
                 value={plusOneName}
                 onChange={(e) => setPlusOneName(e.target.value)}
                 placeholder="Their full name"
+                autoCapitalize="words"
               />
             </div>
           )}
 
-          {state.status === "error" && <p className="error">{state.message}</p>}
+          {state.status === "error" && <p className="rsvp-error">{state.message}</p>}
 
-          <SubmitButton label="Submit Response!" />
-          <button
-            type="button"
-            className="link-back"
-            onClick={() => goToStep("attend")}
-          >
+          <SubmitButton />
+          <button type="button" className="link-back" onClick={() => goToStep("attend")}>
             Go back
           </button>
         </div>
@@ -331,24 +321,16 @@ export default function RsvpForm() {
 
       {step === "decline" && (
         <div className="rsvp-section">
-          <div className="motif-row">
-            <PairMotif />
-          </div>
           <h1>We understand!</h1>
           <p className="subtitle">
-            Thank you for telling us this early &mdash; it genuinely helps.
-            We would have loved to see you there, but we&apos;ll raise a
-            glass to you in Bengaluru.
+            Thank you for letting us know early - it genuinely helps. We&rsquo;ll miss
+            having you with us in Bengaluru, but completely understand.
           </p>
 
-          {state.status === "error" && <p className="error">{state.message}</p>}
+          {state.status === "error" && <p className="rsvp-error">{state.message}</p>}
 
-          <SubmitButton label="Submit Response!" />
-          <button
-            type="button"
-            className="link-back"
-            onClick={() => goToStep("attend")}
-          >
+          <SubmitButton />
+          <button type="button" className="link-back" onClick={() => goToStep("attend")}>
             I change my mind!
           </button>
         </div>

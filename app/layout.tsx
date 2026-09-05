@@ -1,26 +1,19 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Italiana, Petit_Formal_Script } from "next/font/google";
+import { Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
 
+// Cormorant Garamond only, per the approved design refresh — no second
+// display face. Weights/styles cover everything the design uses: light
+// numerals, regular body copy, medium headings/labels, and the italic
+// ampersand and fine print.
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
+  style: ["normal", "italic"],
   weight: ["300", "400", "500", "600"],
   variable: "--font-heading",
 });
 
-const italiana = Italiana({
-  subsets: ["latin"],
-  weight: ["400"],
-  variable: "--font-label",
-});
-
-const petitFormalScript = Petit_Formal_Script({
-  subsets: ["latin"],
-  weight: ["400"],
-  variable: "--font-script",
-});
-
-const siteUrl = "https://wedding-rsvp-three-rouge.vercel.app";
+const siteUrl = "https://wedding-rsvp-nish-wout.vercel.app";
 
 export const metadata: Metadata = {
   title: "FishfoundherWater| Wedding",
@@ -53,10 +46,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html
-      lang="en"
-      className={`${cormorant.variable} ${italiana.variable} ${petitFormalScript.variable}`}
-    >
+    <html lang="en" className={cormorant.variable}>
       <body>{children}</body>
     </html>
   );
