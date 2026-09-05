@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
+import { SITE_URL } from "@/lib/site";
 
 // Cormorant Garamond only, per the approved design refresh — no second
 // display face. Weights/styles cover everything the design uses: light
@@ -13,7 +14,7 @@ const cormorant = Cormorant_Garamond({
   variable: "--font-heading",
 });
 
-const siteUrl = "https://wedding-rsvp-nish-wout.vercel.app";
+const siteUrl = SITE_URL.replace(/\/$/, "");
 
 export const metadata: Metadata = {
   title: "FishfoundherWater| Wedding",
