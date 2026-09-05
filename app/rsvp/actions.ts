@@ -1,6 +1,7 @@
 "use server";
 
 import { createServerClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export type RsvpState = {
   status: "idle" | "success" | "error";
@@ -15,6 +16,7 @@ export async function submitRsvp(
   const attending = formData.get("attending") === "yes";
   const plusOne = formData.get("plusOne") === "yes";
   const plusOneName = String(formData.get("plusOneName") || "").trim();
+  const existingId = String(formData.get("existingId") || "").trim();
 
   if (!name) {
     return { status: "error", message: "Please enter your name so we know who is replying." };
@@ -27,17 +29,24 @@ export async function submitRsvp(
     };
   }
 
-  const supabase = createServerClient();
-
-  const { error } = await supabase.from("rsvps").insert({
+  const record = {
     name,
     attending,
     plus_one: attending ? plusOne : false,
     plus_one_name: attending && plusOne ? plusOneName : null,
-  });
+  };
+
+  // existingId is only ever set by rsvp-form.tsx after checkExistingRsvp
+  // (lookup-actions.ts) matched this exact name to a row already in the
+  // table — this is an update to that specific row, not an arbitrary
+  // client-chosen id, so it needs the service-role client the same way
+  // the admin dashboard does (the anon key has no UPDATE policy at all).
+  const { error } = existingId
+    ? await createAdminClient().from("rsvps").update(record).eq("id", existingId)
+    : await createServerClient().from("rsvps").insert(record);
 
   if (error) {
-    console.error("RSVP insert failed:", error.message);
+    console.error("RSVP save failed:", error.message);
     return {
       status: "error",
       message: "Something went wrong on our end. Please try again.",
