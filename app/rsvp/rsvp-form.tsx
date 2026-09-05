@@ -271,10 +271,10 @@ export default function RsvpForm() {
             <div className="details-panel">
               <div className="details-panel-label">YOU DON&rsquo;T NEED TO FIGURE OUT THE REST JUST YET</div>
               <p>
-                We&rsquo;ll send a formal invitation with the full agenda, accommodation,
-                transport, dress guidance and everything else you&rsquo;ll need. For now,
-                there&rsquo;s no need to worry about the details - we&rsquo;ll make sure you
-                have everything you need to plan your time with us in Bengaluru.
+                We&rsquo;ll send the full details closer to the date, including the agenda,
+                accommodation, transport, dress guidance and everything else you&rsquo;ll need.
+                For now, there&rsquo;s no need to worry about the details - we&rsquo;ll make
+                sure you have everything you need to plan your time with us in Bengaluru.
               </p>
             </div>
             <div className="calendar-link-row">
@@ -327,7 +327,7 @@ export default function RsvpForm() {
             <label htmlFor="name" className="rsvp-label">
               Your name
             </label>
-            <p className="rsvp-hint">As you&apos;d like it to appear on the formal invite.</p>
+            <p className="rsvp-hint">Please include your first and last name.</p>
             <input
               type="text"
               id="name"
