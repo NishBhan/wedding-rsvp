@@ -62,7 +62,13 @@ export async function checkExistingRsvp(rawName: string): Promise<ExistingMatch>
     .select("id, name, attending, plus_one, plus_one_name")
     .limit(1000);
 
-  if (error || !data) return { kind: "none" };
+  if (error || !data) {
+    // Swallowed to "no match" for the guest, but logged so a broken
+    // SUPABASE_SERVICE_ROLE_KEY (or similar) shows up in Vercel's function
+    // logs instead of just silently never finding anyone.
+    if (error) console.error("checkExistingRsvp lookup failed:", error.message);
+    return { kind: "none" };
+  }
 
   const rows = data as Row[];
 
