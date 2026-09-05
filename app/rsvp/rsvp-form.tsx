@@ -108,7 +108,7 @@ export default function RsvpForm() {
       checkExistingRsvp(name).then((result) => {
         setMatch(result.kind === "none" ? null : result);
       });
-    }, 500);
+    }, 180);
     return () => clearTimeout(handle);
   }, [name, step, matchDismissed]);
 
