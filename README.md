@@ -7,8 +7,8 @@ admin page to see responses and export a CSV.
 
 - Next.js 14 (App Router) + TypeScript
 - Supabase (Postgres) for storage, accessed via server actions
-- No guest accounts, no invite codes — one shared link, guests type their
-  own name
+- No guest accounts. Two ways in: a personal link per invite
+  (`/rsvp/<code>`), or the shared `/rsvp` link where guests type their name
 - Admin page gated by a single shared password (not full auth — fine for
   two people)
 
@@ -38,6 +38,24 @@ ADMIN_PASSWORD=
 
 `ADMIN_PASSWORD` is whatever you and Wouter want to use to log into
 `/admin`. Pick something real, not "password".
+
+## 2b. Set up invites (personal links)
+
+Each row in the `invites` table is one invitation with its own link,
+`<site>/rsvp/<code>`. The code is generated automatically. What the guest
+sees depends on two columns:
+
+| Invite | `partner_name` | `plus_one_allowed` | Guest sees |
+| --- | --- | --- | --- |
+| Couple | filled | false | Both names, a yes/no for each |
+| Single + 1 | empty | true | Yes/no, then "Bringing a plus one?" |
+| Single | empty | false | Yes/no only |
+
+To load the guest list, fill in `supabase/invites-template.csv` and import
+it in Supabase (Table editor → `invites` → Insert → Import data from CSV).
+The `/admin` page lists every invite with its link and whether they've
+replied. If you already ran the schema before invites existed, re-run
+`supabase/schema.sql`; it only adds things and leaves existing RSVPs alone.
 
 ## 3. Run it locally
 

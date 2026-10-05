@@ -1117,3 +1117,23 @@ th {
   max-width: 320px;
   margin: 80px auto;
 }
+
+/* Couple invites: one yes/no row per named guest. */
+.couple-person {
+  border: none;
+  padding: 0;
+  margin: clamp(26px, 5vw, 36px) 0 0;
+  text-align: left;
+}
+
+.couple-person legend {
+  padding: 0;
+}
+
+.couple-grid {
+  margin-top: 10px;
+}
+
+.couple-person:last-of-type {
+  margin-bottom: 26px;
+}
