@@ -1,4 +1,5 @@
--- Run this in the Supabase SQL editor for your project.
+-- Run this in the Supabase SQL editor for your project. Safe to re-run:
+-- every statement skips or replaces what already exists.
 
 create table if not exists rsvps (
   id uuid primary key default gen_random_uuid(),
@@ -15,6 +16,7 @@ create table if not exists rsvps (
 -- service role key on the server, which bypasses RLS entirely.
 alter table rsvps enable row level security;
 
+drop policy if exists "anyone can insert an rsvp" on rsvps;
 create policy "anyone can insert an rsvp"
   on rsvps for insert
   to anon
@@ -43,7 +45,7 @@ create table if not exists invites (
   plus_one_allowed boolean not null default false,
   created_at timestamptz not null default now(),
   constraint couple_has_no_plus_one
-    check (not (partner_name is not null and plus_one_allowed))
+    check (not (coalesce(trim(partner_name), '') <> '' and plus_one_allowed))
 );
 
 -- No policies at all: only the service role (server code) can read
