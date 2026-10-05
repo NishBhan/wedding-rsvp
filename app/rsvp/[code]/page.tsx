@@ -19,7 +19,7 @@ export default async function InvitePage({ params }: { params: { code: string } 
 
   return (
     <SaveTheDate
-      greeting={`Dear ${names},`}
+      guestNames={names}
       rsvpHref={`/rsvp/${invite.code}/reply`}
       reminderLink={inviteUrl(invite.code)}
     />

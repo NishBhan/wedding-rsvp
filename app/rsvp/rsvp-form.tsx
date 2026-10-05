@@ -433,7 +433,7 @@ export default function RsvpForm({
 
       {step === "attend" && isCouple && (
         <div className="rsvp-section">
-          <p className="eyebrow">Hello, {greetingNames}</p>
+          <p className="eyebrow eyebrow-names">Hello, {greetingNames}</p>
           <h1>Will you both be there?</h1>
           <p className="subtitle">14&ndash;15 November 2027, Bengaluru, India</p>
           <p className="rsvp-deadline">Kindly reply by {RSVP_DEADLINE_LABEL}</p>
@@ -487,7 +487,9 @@ export default function RsvpForm({
 
       {step === "attend" && !isCouple && (
         <div className="rsvp-section">
-          <p className="eyebrow">{firstName ? `Hello, ${firstName}` : "Hello"}</p>
+          <p className={invite ? "eyebrow eyebrow-names" : "eyebrow"}>
+            {firstName ? `Hello, ${firstName}` : "Hello"}
+          </p>
           <h1>Will you be there?</h1>
           <p className="subtitle">14&ndash;15 November 2027, Bengaluru, India</p>
           {invite && <p className="rsvp-deadline">Kindly reply by {RSVP_DEADLINE_LABEL}</p>}

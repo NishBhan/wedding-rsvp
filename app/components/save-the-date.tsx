@@ -7,21 +7,25 @@ import CalendarCheckIcon from "./calendar-check-icon";
 import { RSVP_DEADLINE_LABEL, rsvpReminderCalendarUrl } from "@/lib/site";
 
 // The save-the-date page. The homepage shows it as-is; a personal invite
-// link (/rsvp/<code>) shows it with a greeting, and its button and
+// link (/rsvp/<code>) shows it with "Dear <names>," on top, and its button and
 // calendar reminder point at that guest's own RSVP form.
 export default function SaveTheDate({
-  greeting,
+  guestNames,
   rsvpHref = "/rsvp",
   reminderLink,
 }: {
-  greeting?: string;
+  guestNames?: string;
   rsvpHref?: string;
   reminderLink?: string;
 }) {
   return (
     <SiteShell showArch={false}>
       <section className="hero">
-        {greeting && <p className="hero-greeting">{greeting}</p>}
+        {guestNames && (
+          <p className="hero-greeting">
+            Dear <strong>{guestNames}</strong>,
+          </p>
+        )}
         <p className="eyebrow hero-eyebrow">Save the date</p>
 
         <div className="hero-monogram">

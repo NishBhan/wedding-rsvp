@@ -1143,9 +1143,23 @@ th {
   margin: 0 0 10px;
   font-family: var(--font-heading), Georgia, serif;
   font-style: italic;
-  font-size: clamp(22px, 4.6vw, 30px);
+  font-size: clamp(24px, 5vw, 32px);
+  line-height: 1.25;
   color: var(--ink-dark);
   animation: nwHeroIn 0.7s ease both 0.05s;
+}
+
+.hero-greeting strong {
+  font-style: normal;
+  font-weight: 600;
+  color: #12294d;
+}
+
+/* Personal-link form: the guest's name in the "Hello, ..." line. */
+.eyebrow-names {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--ink-dark);
 }
 
 .rsvp-deadline {
