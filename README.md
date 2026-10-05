@@ -42,7 +42,9 @@ ADMIN_PASSWORD=
 ## 2b. Set up invites (personal links)
 
 Each row in the `invites` table is one invitation with its own link,
-`<site>/rsvp/<code>`. The code is generated automatically. What the guest
+`<site>/rsvp/<code>`. The code is generated automatically. The link opens
+on the save-the-date page greeted by name ("Dear Anjali & Rohan,"), and its
+button goes to that guest's own form at `/rsvp/<code>/reply`. What the guest
 sees depends on two columns:
 
 | Invite | `partner_name` | `plus_one_allowed` | Guest sees |
@@ -97,5 +99,5 @@ later if you want.
   not an update. Same tradeoff as above — cheap to skip, cheap to add if
   it becomes annoying.
 - **A closing date**: the form doesn't currently check whether it's past
-  1 November 2026. Easy to add a date check in `actions.ts` if you want
+  8 November 2026 (`RSVP_DEADLINE_LABEL` in `lib/site.ts`). Easy to add a date check in `actions.ts` if you want
   the form to stop accepting responses automatically.

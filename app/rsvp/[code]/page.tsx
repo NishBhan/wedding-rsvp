@@ -1,35 +1,27 @@
-import Link from "next/link";
-import RsvpForm from "../rsvp-form";
-import SiteShell from "../../components/site-shell";
-import { getInviteByCode } from "@/lib/invites";
+import SaveTheDate from "../../components/save-the-date";
+import InviteNotFound from "./invite-not-found";
+import { getInviteByCode, inviteUrl } from "@/lib/invites";
 
-// Always read fresh: a guest reopening their link should see the answer
-// they just gave, not a cached page.
+// Always read fresh so edits to the invites table show up immediately.
 export const dynamic = "force-dynamic";
 
-export default async function InviteRsvpPage({ params }: { params: { code: string } }) {
+// A personal invite link opens on the save-the-date page, greeted by name.
+// Its button continues to this guest's own RSVP form at ./reply.
+export default async function InvitePage({ params }: { params: { code: string } }) {
   const found = await getInviteByCode(params.code);
+  if (!found) return <InviteNotFound />;
 
-  if (!found) {
-    return (
-      <SiteShell>
-        <div className="rsvp-section">
-          <img src="/assets/monogram-mark.png" alt="" className="step-monogram" />
-          <h1>We couldn&apos;t find this invitation.</h1>
-          <p className="subtitle">
-            Please double-check the link you were sent, or RSVP with your name instead.
-          </p>
-          <Link href="/rsvp" className="btn-primary" style={{ display: "block", textAlign: "center", textDecoration: "none" }}>
-            RSVP with my name
-          </Link>
-        </div>
-      </SiteShell>
-    );
-  }
+  const { invite } = found;
+  // Names are used exactly as written in the invites table.
+  const names = invite.partnerName
+    ? `${invite.guestName} & ${invite.partnerName}`
+    : invite.guestName;
 
   return (
-    <SiteShell>
-      <RsvpForm invite={found.invite} existing={found.existing} />
-    </SiteShell>
+    <SaveTheDate
+      greeting={`Dear ${names},`}
+      rsvpHref={`/rsvp/${invite.code}/reply`}
+      reminderLink={inviteUrl(invite.code)}
+    />
   );
 }
