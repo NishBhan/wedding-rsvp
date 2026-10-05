@@ -7,6 +7,7 @@ import { checkExistingRsvp, removeSelfAsPlusOne, ExistingMatch } from "./lookup-
 import OrnamentDivider from "../components/ornament-divider";
 import CalendarCheckIcon from "../components/calendar-check-icon";
 import { downloadWeddingIcs } from "@/lib/calendar";
+import { RSVP_DEADLINE_LABEL } from "@/lib/site";
 import type { Invite, InviteRsvp } from "@/lib/invites";
 
 const initialState: RsvpState = { status: "idle" };
@@ -168,9 +169,12 @@ export default function RsvpForm({
     setKeptAnswer(true);
   };
 
-  const firstName = firstNameOf(name);
+  // Invite names are written the way the guest is addressed ("Marc
+  // Antoine", "Daan van Gestel"), so use them whole. A typed name on the
+  // shared link is a full name, so greet by its first word.
+  const firstName = invite ? invite.guestName : firstNameOf(name);
   const isCouple = invite?.type === "couple";
-  const partnerFirstName = invite?.partnerName ? firstNameOf(invite.partnerName) : "";
+  const partnerFirstName = invite?.partnerName ?? "";
   const greetingNames = isCouple ? `${firstName} & ${partnerFirstName}` : firstName;
   const offersPlusOne = !invite || invite.type === "plus_one";
 
@@ -369,6 +373,7 @@ export default function RsvpForm({
           <img src="/assets/monogram-mark.png" alt="" className="step-monogram" />
           <h1>We&apos;d love to know if you can join us.</h1>
           <p className="subtitle">14&ndash;15 November 2027, Bengaluru, India.</p>
+          <p className="rsvp-deadline">Kindly reply by {RSVP_DEADLINE_LABEL}</p>
 
           <div className="name-field">
             <label htmlFor="name" className="rsvp-label">
@@ -428,9 +433,10 @@ export default function RsvpForm({
 
       {step === "attend" && isCouple && (
         <div className="rsvp-section">
-          <p className="eyebrow">Hello, {greetingNames}</p>
+          <p className="eyebrow eyebrow-names">Hello, {greetingNames}</p>
           <h1>Will you both be there?</h1>
           <p className="subtitle">14&ndash;15 November 2027, Bengaluru, India</p>
+          <p className="rsvp-deadline">Kindly reply by {RSVP_DEADLINE_LABEL}</p>
           {existing && (
             <p className="rsvp-fine-note">
               You&apos;ve already replied. Change anything below and send it again.
@@ -481,9 +487,12 @@ export default function RsvpForm({
 
       {step === "attend" && !isCouple && (
         <div className="rsvp-section">
-          <p className="eyebrow">{firstName ? `Hello, ${firstName}` : "Hello"}</p>
+          <p className={invite ? "eyebrow eyebrow-names" : "eyebrow"}>
+            {firstName ? `Hello, ${firstName}` : "Hello"}
+          </p>
           <h1>Will you be there?</h1>
           <p className="subtitle">14&ndash;15 November 2027, Bengaluru, India</p>
+          {invite && <p className="rsvp-deadline">Kindly reply by {RSVP_DEADLINE_LABEL}</p>}
           <div className="response-group" style={{ marginTop: "clamp(30px,5vw,42px)", textAlign: "left" }}>
             <button
               type="button"

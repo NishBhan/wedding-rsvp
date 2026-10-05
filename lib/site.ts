@@ -4,15 +4,21 @@
 export const SITE_URL = "https://www.fishfoundherwater.com/";
 export const RSVP_URL = "https://www.fishfoundherwater.com/rsvp";
 
-// Prefilled Google Calendar link for the "not ready to RSVP yet" reminder
-// on the homepage: an all-day nudge on 9 October 2026, the day before the
-// hoped-for reply date, with the site as both location and details.
-const reminderParams = new URLSearchParams({
-  action: "TEMPLATE",
-  text: "RSVP due for Nish & Wout's wedding on the 10th.",
-  dates: "20261009/20261010",
-  location: SITE_URL,
-  details: `RSVP here: ${SITE_URL}`,
-});
+// The reply-by date, shown on the save-the-date page, the RSVP form and
+// in the calendar reminder. Change all three here.
+export const RSVP_DEADLINE_LABEL = "8th November 2026";
 
-export const RSVP_REMINDER_CALENDAR_URL = `https://calendar.google.com/calendar/render?${reminderParams.toString()}`;
+// Prefilled Google Calendar link for the "not ready to RSVP yet" reminder
+// on the save-the-date page: an all-day nudge on 7 November 2026, the day
+// before the reply date. Personal-link guests get their own link in the
+// details so the reminder takes them straight back to their invite.
+export function rsvpReminderCalendarUrl(link: string = SITE_URL) {
+  const params = new URLSearchParams({
+    action: "TEMPLATE",
+    text: "RSVP due for Nish & Wout's wedding on the 8th.",
+    dates: "20261107/20261108",
+    location: link,
+    details: `RSVP here: ${link}`,
+  });
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
