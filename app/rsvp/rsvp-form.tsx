@@ -5,19 +5,17 @@ import { useEffect, useState } from "react";
 import { submitRsvp, RsvpState } from "./actions";
 import { checkExistingRsvp, removeSelfAsPlusOne, ExistingMatch } from "./lookup-actions";
 import OrnamentDivider from "../components/ornament-divider";
-import CalendarCheckIcon from "../components/calendar-check-icon";
-import { downloadWeddingIcs } from "@/lib/calendar";
+import AttendingDetails from "../components/attending-details";
 import { RSVP_DEADLINE_LABEL } from "@/lib/site";
-import type { Invite, InviteRsvp } from "@/lib/invites";
 
 const initialState: RsvpState = { status: "idle" };
 
-type Step = "name" | "attend" | "plus" | "accept" | "decline";
+type Step = "name" | "attend" | "plus" | "decline";
 
-function SubmitButton({ disabled = false }: { disabled?: boolean }) {
+function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" className="btn-primary" disabled={pending || disabled}>
+    <button type="submit" className="btn-primary" disabled={pending}>
       {pending ? "Sending..." : "Send my RSVP"}
     </button>
   );
@@ -78,48 +76,21 @@ function LotusMotif() {
   );
 }
 
-type YesNo = "yes" | "no" | "";
+const PROGRESS_LABEL: Record<Step, string> = {
+  name: "RSVP · Step 1 of 3",
+  attend: "RSVP · Step 2 of 3",
+  plus: "RSVP · Step 3 of 3",
+  decline: "",
+};
 
-const yesNo = (value: boolean | null | undefined): YesNo =>
-  value === true ? "yes" : value === false ? "no" : "";
-
-const firstNameOf = (fullName: string) => fullName.trim().split(" ")[0] || "";
-
-// Shared link: name -> attend -> plus. Personal link with a plus-one
-// allowed: attend -> plus (no name step). Solo and couple invites are a
-// single question, so they get no step counter.
-function progressLabel(step: Step, invite?: Invite) {
-  if (!invite) {
-    if (step === "name") return "RSVP · Step 1 of 3";
-    if (step === "attend") return "RSVP · Step 2 of 3";
-    if (step === "plus") return "RSVP · Step 3 of 3";
-    return "";
-  }
-  if (invite.type === "plus_one") {
-    if (step === "attend") return "RSVP · Step 1 of 2";
-    if (step === "plus") return "RSVP · Step 2 of 2";
-  }
-  return "";
-}
-
-export default function RsvpForm({
-  invite,
-  existing = null,
-}: {
-  invite?: Invite;
-  existing?: InviteRsvp | null;
-} = {}) {
+export default function RsvpForm() {
   const [state, formAction] = useFormState(submitRsvp, initialState);
-  const [step, setStep] = useState<Step>(invite ? "attend" : "name");
-  const [name, setName] = useState(invite?.guestName ?? "");
+  const [step, setStep] = useState<Step>("name");
+  const [name, setName] = useState("");
   const [nameError, setNameError] = useState("");
-  const [attending, setAttending] = useState<YesNo>(yesNo(existing?.attending));
-  const [partnerAttending, setPartnerAttending] = useState<YesNo>(
-    yesNo(existing?.partnerAttending)
-  );
-  const [plusOne, setPlusOne] = useState<YesNo>(existing ? yesNo(existing.plusOne) : "");
-  const [plusOneName, setPlusOneName] = useState(existing?.plusOneName ?? "");
-  const [weddingSaved, setWeddingSaved] = useState(false);
+  const [attending, setAttending] = useState<"yes" | "no" | "">("");
+  const [plusOne, setPlusOne] = useState<"yes" | "no" | "">("");
+  const [plusOneName, setPlusOneName] = useState("");
 
   // "You're already on the list" detection while typing on the name step.
   const [existingId, setExistingId] = useState<string | null>(null);
@@ -131,14 +102,14 @@ export default function RsvpForm({
   const [keptAnswer, setKeptAnswer] = useState(false);
 
   useEffect(() => {
-    if (invite || step !== "name" || matchDismissed) return;
+    if (step !== "name" || matchDismissed) return;
     const handle = setTimeout(() => {
       checkExistingRsvp(name).then((result) => {
         setMatch(result.kind === "none" ? null : result);
       });
     }, 180);
     return () => clearTimeout(handle);
-  }, [invite, name, step, matchDismissed]);
+  }, [name, step, matchDismissed]);
 
   const goToStep = (next: Step) => {
     setStep(next);
@@ -169,14 +140,7 @@ export default function RsvpForm({
     setKeptAnswer(true);
   };
 
-  // Invite names are written the way the guest is addressed ("Marc
-  // Antoine", "Daan van Gestel"), so use them whole. A typed name on the
-  // shared link is a full name, so greet by its first word.
-  const firstName = invite ? invite.guestName : firstNameOf(name);
-  const isCouple = invite?.type === "couple";
-  const partnerFirstName = invite?.partnerName ?? "";
-  const greetingNames = isCouple ? `${firstName} & ${partnerFirstName}` : firstName;
-  const offersPlusOne = !invite || invite.type === "plus_one";
+  const firstName = name.trim().split(" ")[0] || "";
 
   if (keptAnswer) {
     return (
@@ -268,21 +232,8 @@ export default function RsvpForm({
 
   // --- Post-submit confirmation ---
   if (state.status === "success") {
-    const guestComing = attending === "yes";
-    const partnerComing = isCouple && partnerAttending === "yes";
-    const isAttending = guestComing || partnerComing;
-    const hasPlusOne = guestComing && offersPlusOne && plusOne === "yes";
-
-    let thanks = `Thank you, ${firstName || "friend"} — your place is saved.`;
-    if (isCouple) {
-      if (guestComing && partnerComing) {
-        thanks = `Thank you, ${greetingNames} — your places are saved.`;
-      } else {
-        const coming = guestComing ? firstName : partnerFirstName;
-        const missing = guestComing ? partnerFirstName : firstName;
-        thanks = `Thank you — ${coming}'s place is saved. We'll miss ${missing}, but completely understand.`;
-      }
-    }
+    const isAttending = attending === "yes";
+    const hasPlusOne = isAttending && plusOne === "yes";
 
     return (
       <div className="rsvp-section confirmation">
@@ -303,7 +254,7 @@ export default function RsvpForm({
         <div className="hero-location" style={{ margin: "20px 0 0", animation: "none" }}>BENGALURU, INDIA</div>
         <p>
           {isAttending
-            ? thanks
+            ? `Thank you, ${firstName || "friend"} — your place is saved.`
             : "We’ll miss having you with us in Bengaluru, but completely understand. Thank you for telling us early."}
         </p>
 
@@ -314,36 +265,7 @@ export default function RsvpForm({
           </div>
         )}
 
-        {isAttending && (
-          <>
-            <div className="details-panel">
-              <div className="details-panel-label">YOU DON&rsquo;T NEED TO FIGURE OUT THE REST JUST YET</div>
-              <p>
-                The full agenda, along with accommodation, transport and dress guidance, is
-                coming soon, so there&rsquo;s no need to book your travel just yet. If
-                you&rsquo;re thinking of extending your trip into a longer holiday, we&rsquo;re
-                happy to connect you with a travel desk to help plan it.
-              </p>
-            </div>
-            <div className="calendar-link-row">
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  downloadWeddingIcs();
-                  setWeddingSaved(true);
-                }}
-                className="calendar-link"
-              >
-                Add the wedding to my calendar
-                <CalendarCheckIcon />
-              </a>
-            </div>
-            {weddingSaved && (
-              <p className="saved-note">Saved — 14 to 16 November 2027 are held in your calendar.</p>
-            )}
-          </>
-        )}
+        {isAttending && <AttendingDetails />}
       </div>
     );
   }
@@ -353,19 +275,16 @@ export default function RsvpForm({
       {/* Hidden fields carry forward values decided on earlier steps,
           so the single form submission at the end has everything. */}
       {step !== "name" && <input type="hidden" name="name" value={name} />}
-      {(step === "plus" || step === "accept" || step === "decline") && (
+      {(step === "plus" || step === "decline") && (
         <input type="hidden" name="attending" value={attending} />
       )}
       {existingId && <input type="hidden" name="existingId" value={existingId} />}
-      {invite && <input type="hidden" name="inviteCode" value={invite.code} />}
 
       <div className="motif-row">
         {step === "name" && <TulipMotif />}
         {(step === "attend" || step === "decline") && <PairMotif />}
-        {(step === "plus" || step === "accept") && <LotusMotif />}
-        {progressLabel(step, invite) && (
-          <div className="rsvp-progress">{progressLabel(step, invite)}</div>
-        )}
+        {step === "plus" && <LotusMotif />}
+        {PROGRESS_LABEL[step] && <div className="rsvp-progress">{PROGRESS_LABEL[step]}</div>}
       </div>
 
       {step === "name" && (
@@ -431,75 +350,18 @@ export default function RsvpForm({
         </div>
       )}
 
-      {step === "attend" && isCouple && (
+      {step === "attend" && (
         <div className="rsvp-section">
-          <p className="eyebrow eyebrow-names">Hello, {greetingNames}</p>
-          <h1>Will you both be there?</h1>
-          <p className="subtitle">14&ndash;15 November 2027, Bengaluru, India</p>
-          <p className="rsvp-deadline">Kindly reply by {RSVP_DEADLINE_LABEL}</p>
-          {existing && (
-            <p className="rsvp-fine-note">
-              You&apos;ve already replied. Change anything below and send it again.
-            </p>
-          )}
-
-          {[
-            { label: invite.guestName, field: "attending", value: attending, set: setAttending },
-            {
-              label: invite.partnerName ?? "",
-              field: "partnerAttending",
-              value: partnerAttending,
-              set: setPartnerAttending,
-            },
-          ].map((person) => (
-            <fieldset key={person.field} className="couple-person">
-              <legend className="rsvp-label">{person.label}</legend>
-              <div className="plus-one-grid couple-grid">
-                <label className="plus-one-option">
-                  <input
-                    type="radio"
-                    name={person.field}
-                    value="yes"
-                    checked={person.value === "yes"}
-                    onChange={() => person.set("yes")}
-                  />
-                  <span>{person.value === "yes" ? "✓  Coming" : "Coming"}</span>
-                </label>
-                <label className="plus-one-option">
-                  <input
-                    type="radio"
-                    name={person.field}
-                    value="no"
-                    checked={person.value === "no"}
-                    onChange={() => person.set("no")}
-                  />
-                  <span>Can&apos;t make it</span>
-                </label>
-              </div>
-            </fieldset>
-          ))}
-
-          {state.status === "error" && <p className="rsvp-error">{state.message}</p>}
-
-          <SubmitButton disabled={!attending || !partnerAttending} />
-        </div>
-      )}
-
-      {step === "attend" && !isCouple && (
-        <div className="rsvp-section">
-          <p className={invite ? "eyebrow eyebrow-names" : "eyebrow"}>
-            {firstName ? `Hello, ${firstName}` : "Hello"}
-          </p>
+          <p className="eyebrow">{firstName ? `Hello, ${firstName}` : "Hello"}</p>
           <h1>Will you be there?</h1>
           <p className="subtitle">14&ndash;15 November 2027, Bengaluru, India</p>
-          {invite && <p className="rsvp-deadline">Kindly reply by {RSVP_DEADLINE_LABEL}</p>}
           <div className="response-group" style={{ marginTop: "clamp(30px,5vw,42px)", textAlign: "left" }}>
             <button
               type="button"
               className="response-option-btn"
               onClick={() => {
                 setAttending("yes");
-                goToStep(offersPlusOne ? "plus" : "accept");
+                goToStep("plus");
               }}
             >
               Yes! I&apos;ll be there
@@ -516,21 +378,10 @@ export default function RsvpForm({
               I&apos;m sorry, I can&apos;t make it
             </button>
           </div>
-          {existing && (
-            <p className="rsvp-fine-note">
-              You&apos;ve already replied
-              {existing.attending ? " that you'll be there" : " that you can't make it"}. Pick
-              again to change it.
-            </p>
-          )}
-          {offersPlusOne && (
-            <p className="rsvp-fine-note">If you&apos;re bringing someone, you can add them next.</p>
-          )}
-          {!invite && (
-            <button type="button" className="link-back" onClick={() => goToStep("name")}>
-              Go back
-            </button>
-          )}
+          <p className="rsvp-fine-note">If you&apos;re bringing someone, you can add them next.</p>
+          <button type="button" className="link-back" onClick={() => goToStep("name")}>
+            Go back
+          </button>
         </div>
       )}
 
@@ -581,23 +432,6 @@ export default function RsvpForm({
               />
             </div>
           )}
-
-          {state.status === "error" && <p className="rsvp-error">{state.message}</p>}
-
-          <SubmitButton />
-          <button type="button" className="link-back" onClick={() => goToStep("attend")}>
-            Go back
-          </button>
-        </div>
-      )}
-
-      {step === "accept" && (
-        <div className="rsvp-section">
-          <h1>Wonderful!</h1>
-          <p className="subtitle">
-            We can&rsquo;t wait to celebrate with you in Bengaluru. Send your RSVP and
-            we&rsquo;ll save your place.
-          </p>
 
           {state.status === "error" && <p className="rsvp-error">{state.message}</p>}
 

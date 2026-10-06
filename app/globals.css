@@ -1138,30 +1138,6 @@ th {
   margin-bottom: 26px;
 }
 
-/* Personal invite links: "Dear Anjali & Rohan" above "Save the date". */
-.hero-greeting {
-  margin: 0 0 10px;
-  font-family: var(--font-heading), Georgia, serif;
-  font-style: italic;
-  font-size: clamp(24px, 5vw, 32px);
-  line-height: 1.25;
-  color: var(--ink-dark);
-  animation: nwHeroIn 0.7s ease both 0.05s;
-}
-
-.hero-greeting strong {
-  font-style: normal;
-  font-weight: 600;
-  color: #12294d;
-}
-
-/* Personal-link form: the guest's name in the "Hello, ..." line. */
-.eyebrow-names {
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--ink-dark);
-}
-
 .rsvp-deadline {
   text-align: center;
   margin: 6px 0 0;
@@ -1170,4 +1146,89 @@ th {
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--gold);
+}
+
+/* Personal invitation (/rsvp/<code>): a short letter to the guest, then
+   the RSVP on the same page. */
+.invite-letter {
+  margin: clamp(34px, 5vw, 52px) auto 0;
+  max-width: 560px;
+  text-align: left;
+  animation: nwHeroIn 0.7s ease both 1.16s;
+}
+
+.invite-letter p {
+  margin: 0 0 18px;
+  font-size: 19px;
+  line-height: 1.7;
+  color: #3a4d6b;
+}
+
+.invite-letter .invite-salutation {
+  margin-bottom: 22px;
+  font-family: var(--font-heading), Georgia, serif;
+  font-style: italic;
+  font-size: clamp(26px, 5.4vw, 34px);
+  line-height: 1.25;
+  color: var(--ink-dark);
+}
+
+.invite-salutation strong {
+  font-style: normal;
+  font-weight: 600;
+  color: #12294d;
+}
+
+.invite-letter .invite-signoff {
+  margin-top: 24px;
+  font-style: italic;
+  color: var(--ink-dark);
+}
+
+.invite-rsvp {
+  margin: clamp(40px, 6vw, 64px) auto 0;
+  max-width: 560px;
+  text-align: center;
+  scroll-margin-top: 80px;
+  animation: nwHeroIn 0.7s ease both 1.24s;
+}
+
+.invite-rsvp-heading {
+  margin: 18px 0 0;
+  font-family: var(--font-heading), Georgia, serif;
+  font-weight: 500;
+  font-size: clamp(30px, 6vw, 42px);
+  line-height: 1.2;
+  color: #12294d;
+}
+
+.invite-answer-grid {
+  margin-top: clamp(24px, 4vw, 32px);
+}
+
+.invite-answer-grid .plus-one-option span {
+  font-size: 20px;
+}
+
+/* Keep paired options the same height when one label wraps. */
+.invite-rsvp .plus-one-option span {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.invite-plus-one {
+  margin-top: 28px;
+  text-align: left;
+  animation: nwRise 0.35s ease both;
+}
+
+.invite-send {
+  margin-top: 26px;
+}
+
+.invite-reminder {
+  animation: none;
 }

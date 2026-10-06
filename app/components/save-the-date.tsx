@@ -6,26 +6,12 @@ import HeroLandscape from "./hero-landscape";
 import CalendarCheckIcon from "./calendar-check-icon";
 import { RSVP_DEADLINE_LABEL, rsvpReminderCalendarUrl } from "@/lib/site";
 
-// The save-the-date page. The homepage shows it as-is; a personal invite
-// link (/rsvp/<code>) shows it with "Dear <names>," on top, and its button and
-// calendar reminder point at that guest's own RSVP form.
-export default function SaveTheDate({
-  guestNames,
-  rsvpHref = "/rsvp",
-  reminderLink,
-}: {
-  guestNames?: string;
-  rsvpHref?: string;
-  reminderLink?: string;
-}) {
+// The save-the-date on the homepage, for anyone without a personal link.
+// Personal links get the full invitation instead (components/invitation.tsx).
+export default function SaveTheDate() {
   return (
     <SiteShell showArch={false}>
       <section className="hero">
-        {guestNames && (
-          <p className="hero-greeting">
-            Dear <strong>{guestNames}</strong>,
-          </p>
-        )}
         <p className="eyebrow hero-eyebrow">Save the date</p>
 
         <div className="hero-monogram">
@@ -53,7 +39,7 @@ export default function SaveTheDate({
         </p>
 
         <div className="hero-cta">
-          <Link href={rsvpHref} className="btn-primary hero-btn">
+          <Link href="/rsvp" className="btn-primary hero-btn">
             Confirm your RSVP!
           </Link>
         </div>
@@ -62,7 +48,7 @@ export default function SaveTheDate({
           <p>
             Need some time to decide? Add a reminder for the{" "}
             <a
-              href={rsvpReminderCalendarUrl(reminderLink)}
+              href={rsvpReminderCalendarUrl()}
               target="_blank"
               rel="noopener"
               className="calendar-link"
