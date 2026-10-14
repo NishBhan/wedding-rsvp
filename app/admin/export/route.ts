@@ -27,7 +27,7 @@ export async function GET() {
 
   const { data: invites } = await supabase
     .from("invites")
-    .select("id, partner_name, plus_one_allowed");
+    .select("id, guest_name, partner_name, plus_one_allowed");
   const inviteById = new Map((invites ?? []).map((i) => [i.id, i]));
 
   if (error) {
@@ -47,12 +47,13 @@ export async function GET() {
 
   const rows = (data ?? []).map((r) => {
     const invite = r.invite_id ? inviteById.get(r.invite_id) : undefined;
+    // Names as they are now on the invite (see app/admin/page.tsx).
     return [
-      r.name,
+      invite?.guest_name || r.name,
       r.attending ? "Yes" : "No",
       r.plus_one ? "Yes" : "No",
       r.plus_one_name ?? "",
-      r.partner_name ?? "",
+      invite?.partner_name || r.partner_name || "",
       r.partner_attending === null || r.partner_attending === undefined
         ? ""
         : r.partner_attending

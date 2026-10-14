@@ -71,6 +71,12 @@ export default async function AdminPage({
   const rsvps = (data as Rsvp[]) ?? [];
   const invites = (inviteData as InviteRow[]) ?? [];
   const rsvpByInvite = new Map(rsvps.filter((r) => r.invite_id).map((r) => [r.invite_id, r]));
+  // Show names as they are now on the invite, not the copy saved with the
+  // reply, so a name corrected in the invites table shows up everywhere.
+  const inviteById = new Map(invites.map((i) => [i.id, i]));
+  const guestNameOf = (r: Rsvp) => (r.invite_id && inviteById.get(r.invite_id)?.guest_name) || r.name;
+  const partnerNameOf = (r: Rsvp) =>
+    (r.invite_id && inviteById.get(r.invite_id)?.partner_name) || r.partner_name;
 
   // A shared-link reply (no invite) whose first name matches someone on the
   // invite list may be the same person replying twice, once by name and
@@ -159,15 +165,15 @@ export default async function AdminPage({
           <tbody>
             {rsvps.map((r) => (
               <tr key={r.id}>
-                <td>{r.name}</td>
+                <td>{guestNameOf(r)}</td>
                 <td>
                   <span className={`badge ${r.attending ? "yes" : "no"}`}>
                     {r.attending ? "Yes" : "No"}
                   </span>
                 </td>
                 <td>
-                  {r.partner_name
-                    ? `${r.partner_name}: ${r.partner_attending ? "Yes" : "No"}`
+                  {partnerNameOf(r)
+                    ? `${partnerNameOf(r)}: ${r.partner_attending ? "Yes" : "No"}`
                     : r.plus_one
                       ? r.plus_one_name || "Unnamed"
                       : "-"}
