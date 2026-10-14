@@ -3,6 +3,8 @@
   --ink-dark: #12294d;
   --cream: #fbf8f1;
   --gold: #b08d4f;
+  /* Gold dark enough for small text on the cream background (4.7:1). */
+  --gold-text: #836329;
   --line: #c9c0aa;
   --error: #a3352c;
 }
@@ -706,7 +708,7 @@ input[type="text"].rsvp-input:focus {
   font-style: italic;
   font-size: 17px;
   line-height: 1.5;
-  color: #8a7a5f;
+  color: #6b5c44;
 }
 
 .link-back {
@@ -1107,7 +1109,7 @@ th {
   font-size: 13px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--gold);
+  color: var(--gold-text);
 }
 
 /* Personal invitation (/rsvp/<code>): a short letter to the guest, then
