@@ -2,7 +2,8 @@
 
 import { useFormState, useFormStatus } from "react-dom";
 import { useState } from "react";
-import { submitRsvp, RsvpState } from "./actions";
+import type { RsvpState } from "./actions";
+import { safeSubmitRsvp } from "./safe-submit";
 import OrnamentDivider from "../components/ornament-divider";
 import AttendingDetails from "../components/attending-details";
 import { RSVP_DEADLINE_LABEL } from "@/lib/site";
@@ -83,7 +84,7 @@ const PROGRESS_LABEL: Record<Step, string> = {
 };
 
 export default function RsvpForm({ closed = false }: { closed?: boolean }) {
-  const [state, formAction] = useFormState(submitRsvp, initialState);
+  const [state, formAction] = useFormState(safeSubmitRsvp, initialState);
   const [step, setStep] = useState<Step>("name");
   const [name, setName] = useState("");
   const [nameError, setNameError] = useState("");

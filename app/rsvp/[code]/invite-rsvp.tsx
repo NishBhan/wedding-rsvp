@@ -2,7 +2,8 @@
 
 import { useFormState, useFormStatus } from "react-dom";
 import { useEffect, useRef, useState } from "react";
-import { submitRsvp, RsvpState } from "../actions";
+import type { RsvpState } from "../actions";
+import { safeSubmitRsvp } from "../safe-submit";
 import AttendingDetails from "../../components/attending-details";
 import OrnamentDivider from "../../components/ornament-divider";
 import CalendarCheckIcon from "../../components/calendar-check-icon";
@@ -93,7 +94,7 @@ export default function InviteRsvp({
   inviteLink: string;
   closed: boolean;
 }) {
-  const [state, formAction] = useFormState(submitRsvp, initialState);
+  const [state, formAction] = useFormState(safeSubmitRsvp, initialState);
   const [attending, setAttending] = useState<YesNo>(yesNo(existing?.attending));
   const [partnerAttending, setPartnerAttending] = useState<YesNo>(
     yesNo(existing?.partnerAttending)
