@@ -901,6 +901,16 @@ button:disabled {
   margin: 30px 0 0;
 }
 
+/* Fine-print notes inside a confirmation keep their own size, colour and
+   centring; the rule above would otherwise pin the narrow note to the
+   left edge. */
+.confirmation .rsvp-fine-note {
+  margin: 24px auto 0;
+  font-size: 17px;
+  line-height: 1.5;
+  color: #6b5c44;
+}
+
 .confirmation .ornament-divider {
   margin: 0 auto 34px;
 }
