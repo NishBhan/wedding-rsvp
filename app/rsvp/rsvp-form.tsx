@@ -1,9 +1,8 @@
 "use client";
 
 import { useFormState, useFormStatus } from "react-dom";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { submitRsvp, RsvpState } from "./actions";
-import { checkExistingRsvp, ExistingMatch } from "./lookup-actions";
 import OrnamentDivider from "../components/ornament-divider";
 import CalendarCheckIcon from "../components/calendar-check-icon";
 import { downloadWeddingIcs } from "@/lib/calendar";
@@ -121,21 +120,6 @@ export default function RsvpForm({
   const [plusOneName, setPlusOneName] = useState(existing?.plusOneName ?? "");
   const [weddingSaved, setWeddingSaved] = useState(false);
 
-  // "You're already on the list" detection while typing on the name step.
-  const [match, setMatch] = useState<ExistingMatch | null>(null);
-  const [matchDismissed, setMatchDismissed] = useState(false);
-  const [keptAnswer, setKeptAnswer] = useState(false);
-
-  useEffect(() => {
-    if (invite || step !== "name" || matchDismissed) return;
-    const handle = setTimeout(() => {
-      checkExistingRsvp(name).then((result) => {
-        setMatch(result.kind === "none" ? null : result);
-      });
-    }, 180);
-    return () => clearTimeout(handle);
-  }, [invite, name, step, matchDismissed]);
-
   const goToStep = (next: Step) => {
     setStep(next);
     if (typeof window !== "undefined") window.scrollTo(0, 0);
@@ -150,20 +134,6 @@ export default function RsvpForm({
     goToStep("attend");
   };
 
-  const updateMyAnswer = () => {
-    if (!match || match.kind !== "primary") return;
-    setAttending(match.attending ? "yes" : "no");
-    setPlusOne(match.plusOne ? "yes" : "no");
-    setPlusOneName(match.plusOneName || "");
-    setMatchDismissed(true);
-    goToStep("attend");
-  };
-
-  const keepMyAnswer = () => {
-    setMatchDismissed(true);
-    setKeptAnswer(true);
-  };
-
   // Invite names are written the way the guest is addressed ("Marc
   // Antoine", "Daan van Gestel"), so use them whole. A typed name on the
   // shared link is a full name, so greet by its first word.
@@ -172,16 +142,6 @@ export default function RsvpForm({
   const partnerFirstName = invite?.partnerName ?? "";
   const greetingNames = isCouple ? `${firstName} & ${partnerFirstName}` : firstName;
   const offersPlusOne = !invite || invite.type === "plus_one";
-
-  if (keptAnswer) {
-    return (
-      <div className="rsvp-section confirmation">
-        <img src="/assets/monogram-mark.png" alt="" className="monogram" />
-        <h1>You&apos;re all set.</h1>
-        <p>We already have your answer — no need to do anything else. You can close this.</p>
-      </div>
-    );
-  }
 
   // --- Post-submit confirmation ---
   if (state.status === "success") {
@@ -303,7 +263,6 @@ export default function RsvpForm({
               value={name}
               onChange={(e) => {
                 setName(e.target.value);
-                setMatchDismissed(false);
               }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
@@ -318,27 +277,6 @@ export default function RsvpForm({
             />
             {nameError && <p className="rsvp-error">{nameError}</p>}
           </div>
-
-          {match && match.kind === "primary" && !matchDismissed && (
-            <div className="match-banner">
-              <p>
-                Looks like <strong>{match.name}</strong> already responded —{" "}
-                {match.attending ? "you said you'll be there" : "you said you can't make it"}
-                {match.attending && match.plusOne
-                  ? `, with ${match.plusOneName || "a plus-one"}`
-                  : ""}
-                . Want to change it?
-              </p>
-              <div className="match-banner-actions">
-                <button type="button" className="link-back match-banner-link" onClick={updateMyAnswer}>
-                  Yes, update it
-                </button>
-                <button type="button" className="link-back match-banner-link" onClick={keepMyAnswer}>
-                  No, that&apos;s correct
-                </button>
-              </div>
-            </div>
-          )}
 
           <button type="button" className="btn-primary" onClick={submitName}>
             Continue
