@@ -3,7 +3,11 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { isAdminAuthed } from "@/lib/admin-auth";
 import { inviteTypeOf } from "@/lib/invites";
 
-function csvEscape(value: string) {
+function csvEscape(raw: string) {
+  // Guest-typed names starting with = + - @ (or a tab/CR) would run as a
+  // formula when the CSV is opened in Excel or Google Sheets. A leading
+  // apostrophe makes the spreadsheet treat them as plain text.
+  const value = /^[=+\-@\t\r]/.test(raw) ? `'${raw}` : raw;
   if (value.includes(",") || value.includes('"') || value.includes("\n")) {
     return `"${value.replace(/"/g, '""')}"`;
   }
