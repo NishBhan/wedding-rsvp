@@ -14,7 +14,7 @@ export default function FishLeap() {
           <circle cx="66" cy="72" r="1" opacity=".3" />
         </g>
         <g className="fish-leap-fish">
-          <g transform="translate(150 6) rotate(28) scale(-0.72 0.72)">
+          <g transform="translate(162 16) rotate(-28) scale(-0.72 0.72)">
             <path d="M0 16 C12 4 34 0 50 8 C58 12 62 18 64 22 C58 30 44 36 30 36 C16 36 4 26 0 16 Z" fill="#1B3A6B" fillOpacity=".1" />
             <path d="M64 22 C70 16 76 12 82 10 C80 18 80 26 82 32 C76 30 69 27 64 22 Z" />
             <path d="M24 10 C28 16 28 26 24 34" />
