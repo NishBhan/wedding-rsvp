@@ -1292,3 +1292,8 @@ th {
     transform: none;
   }
 }
+
+.confirmation .whatsapp-line {
+  margin-top: 22px;
+  font-size: 19px;
+}

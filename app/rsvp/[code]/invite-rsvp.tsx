@@ -9,7 +9,7 @@ import AttendingDetails from "../../components/attending-details";
 import OrnamentDivider from "../../components/ornament-divider";
 import FishLeap from "../../components/fish-leap";
 import CalendarCheckIcon from "../../components/calendar-check-icon";
-import { RSVP_DEADLINE_LABEL, rsvpReminderCalendarUrl } from "@/lib/site";
+import { RSVP_DEADLINE_LABEL, rsvpReminderCalendarUrl, whatsappUrl } from "@/lib/site";
 import type { Invite, InviteRsvp } from "@/lib/invites";
 
 type YesNo = "yes" | "no" | "";
@@ -154,6 +154,13 @@ export default function InviteRsvp({
               we&rsquo;ll sort it out together.
             </p>
           )}
+          {whatsappUrl() && (
+            <p className="whatsapp-line">
+              <a href={whatsappUrl()!} target="_blank" rel="noopener" className="calendar-link">
+                Message us on WhatsApp
+              </a>
+            </p>
+          )}
         </div>
       </RsvpSection>
     );
@@ -179,12 +186,12 @@ export default function InviteRsvp({
       const coming = guestComing ? guest : partner;
       const missing = guestComing ? partner : guest;
       heading = `We can’t wait to celebrate with you, ${coming}!`;
-      body = `Your place is saved. We’ll miss you, ${missing}, and we completely understand. We’ll raise a glass to you from Bengaluru.`;
+      body = `Your place is saved. ${missing}, we’ll miss you, and there will be a glass raised to you in Bengaluru.`;
     } else {
       const who = isCouple ? `${guest} & ${partner}` : guest;
       heading = `We’ll miss you, ${who}.`;
       body =
-        "We’re so sorry you can’t be with us, and we completely understand. You’ll be in our hearts on the day, and we’ll raise a glass to you from Bengaluru. Thank you for letting us know.";
+        "Thank you for telling us, and for telling us early. You’ll be in our hearts on the day, and there will be a glass raised to you in Bengaluru.";
     }
 
     return (
@@ -200,6 +207,13 @@ export default function InviteRsvp({
                 {plusOneName.trim()}
               </div>
             </div>
+          )}
+          {!bothComing && whatsappUrl() && (
+            <p className="whatsapp-line">
+              <a href={whatsappUrl()!} target="_blank" rel="noopener" className="calendar-link">
+                Send us your news on WhatsApp
+              </a>
+            </p>
           )}
           {anyoneComing && <AttendingDetails />}
           <p className="rsvp-fine-note">
