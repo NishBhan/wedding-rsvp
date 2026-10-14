@@ -68,6 +68,25 @@ export default async function AdminPage({
   const invites = (inviteData as InviteRow[]) ?? [];
   const rsvpByInvite = new Map(rsvps.filter((r) => r.invite_id).map((r) => [r.invite_id, r]));
 
+  // A shared-link reply (no invite) whose first name matches someone on the
+  // invite list may be the same person replying twice, once by name and
+  // once by personal link. Flag it so it can be checked by hand before
+  // trusting the headcount.
+  const firstWord = (name: string | null) =>
+    (name ?? "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim()
+      .toLowerCase()
+      .split(/\s+/)[0] ?? "";
+  const possibleDuplicates = (r: Rsvp) => {
+    const first = firstWord(r.name);
+    if (!first) return [];
+    return invites
+      .filter((i) => firstWord(i.guest_name) === first || firstWord(i.partner_name) === first)
+      .map((i) => (i.partner_name ? `${i.guest_name} & ${i.partner_name}` : i.guest_name));
+  };
+
   // Every total counts people, not responses: the guest, their plus-one
   // (only if the guest is coming) and, on a couple invite, the partner,
   // whose answer is independent of the guest's.
@@ -148,7 +167,18 @@ export default async function AdminPage({
                     ? r.plus_one_name || "Unnamed"
                     : "-"}
               </td>
-              <td>{r.invite_id ? "Personal link" : "Shared link (unmatched)"}</td>
+              <td>
+                {r.invite_id ? (
+                  "Personal link"
+                ) : possibleDuplicates(r).length > 0 ? (
+                  <>
+                    Shared link.{" "}
+                    <strong>Possible duplicate of: {possibleDuplicates(r).join("; ")}</strong>
+                  </>
+                ) : (
+                  "Shared link"
+                )}
+              </td>
               <td>{new Date(r.submitted_at).toLocaleString("en-GB")}</td>
             </tr>
           ))}
