@@ -12,15 +12,6 @@ export const OG_IMAGE = {
   alt: "Nishtha & Wouter monogram",
 };
 
-// WhatsApp number guests can message from the decline and closed screens,
-// in international format with digits only (e.g. "447700900123"). Empty
-// hides the link everywhere.
-export const COUPLE_WHATSAPP = "";
-
-export function whatsappUrl() {
-  return COUPLE_WHATSAPP ? `https://wa.me/${COUPLE_WHATSAPP}` : null;
-}
-
 // Longest name a guest can type (their own on the shared page, or a
 // plus-one's). Enforced in the inputs and again in the submit action.
 export const MAX_NAME_LENGTH = 80;
