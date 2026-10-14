@@ -3,7 +3,7 @@
 import { useFormState, useFormStatus } from "react-dom";
 import { useEffect, useState } from "react";
 import { submitRsvp, RsvpState } from "./actions";
-import { checkExistingRsvp, removeSelfAsPlusOne, ExistingMatch } from "./lookup-actions";
+import { checkExistingRsvp, ExistingMatch } from "./lookup-actions";
 import OrnamentDivider from "../components/ornament-divider";
 import CalendarCheckIcon from "../components/calendar-check-icon";
 import { downloadWeddingIcs } from "@/lib/calendar";
@@ -124,9 +124,6 @@ export default function RsvpForm({
   // "You're already on the list" detection while typing on the name step.
   const [match, setMatch] = useState<ExistingMatch | null>(null);
   const [matchDismissed, setMatchDismissed] = useState(false);
-  const [plusOneResolution, setPlusOneResolution] = useState<
-    "none" | "still-coming" | "removed"
-  >("none");
   const [keptAnswer, setKeptAnswer] = useState(false);
 
   useEffect(() => {
@@ -182,84 +179,6 @@ export default function RsvpForm({
         <img src="/assets/monogram-mark.png" alt="" className="monogram" />
         <h1>You&apos;re all set.</h1>
         <p>We already have your answer — no need to do anything else. You can close this.</p>
-      </div>
-    );
-  }
-
-  // --- "You're already down as {name}'s plus-one" branch ---
-  if (
-    step === "name" &&
-    match &&
-    match.kind === "plus_one" &&
-    !matchDismissed &&
-    plusOneResolution === "none"
-  ) {
-    const primaryFirstName = match.primaryName.split(" ")[0];
-    return (
-      <div className="rsvp-section">
-        <div className="motif-row">
-          <PairMotif />
-        </div>
-        <img src="/assets/monogram-mark.png" alt="" className="step-monogram" />
-        <h1>Looks like you&apos;re already on the list.</h1>
-        <p className="subtitle">
-          You&apos;re down as {match.primaryName}&apos;s plus-one, and{" "}
-          {match.attending
-            ? `${primaryFirstName} said they'll be there.`
-            : `${primaryFirstName} said they can't make it.`}
-        </p>
-        <div className="response-group" style={{ marginTop: "clamp(28px,5vw,40px)", textAlign: "left" }}>
-          <button
-            type="button"
-            className="response-option-btn"
-            onClick={() => setPlusOneResolution("still-coming")}
-          >
-            Still coming with them
-          </button>
-          <button
-            type="button"
-            className="response-option-btn outline"
-            onClick={async () => {
-              await removeSelfAsPlusOne(match.primaryId);
-              setPlusOneResolution("removed");
-            }}
-          >
-            Actually, I can&apos;t make it
-          </button>
-        </div>
-        <button
-          type="button"
-          className="link-back"
-          onClick={() => {
-            setMatchDismissed(true);
-            setMatch(null);
-          }}
-        >
-          That&apos;s not me — I have a different name
-        </button>
-      </div>
-    );
-  }
-
-  if (plusOneResolution === "still-coming") {
-    return (
-      <div className="rsvp-section confirmation">
-        <img src="/assets/monogram-mark.png" alt="" className="monogram" />
-        <h1>Wonderful — see you there!</h1>
-        <p>You&apos;re all set. No need to do anything else — you can close this.</p>
-      </div>
-    );
-  }
-
-  if (plusOneResolution === "removed") {
-    return (
-      <div className="rsvp-section confirmation">
-        <img src="/assets/monogram-mark.png" alt="" className="monogram" />
-        <h1>Thanks for letting us know.</h1>
-        <p>
-          We&apos;ve updated {match && match.kind === "plus_one" ? match.primaryName : "their"}
-          {"'"}s RSVP. You&apos;re all set — you can close this.
-        </p>
       </div>
     );
   }
