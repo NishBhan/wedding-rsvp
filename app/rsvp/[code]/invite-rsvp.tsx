@@ -310,16 +310,15 @@ export default function InviteRsvp({
           <div className="hero-reminder invite-reminder">
             <p>
               Need a little time to decide? Add a reminder for the{" "}
-              <a
-                href={rsvpReminderCalendarUrl(inviteLink)}
-                target="_blank"
-                rel="noopener"
-                className="calendar-link"
-              >
+              <a href={`/calendar/rsvp-reminder.ics?code=${invite.code}`} className="calendar-link">
                 RSVP to your calendar
                 <CalendarCheckIcon />
+              </a>{" "}
+              (or{" "}
+              <a href={rsvpReminderCalendarUrl(inviteLink)} target="_blank" rel="noopener" className="calendar-link">
+                Google Calendar
               </a>
-              .
+              ).
             </p>
           </div>
         )}

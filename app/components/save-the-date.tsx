@@ -47,16 +47,15 @@ export default function SaveTheDate() {
         <div className="hero-reminder">
           <p>
             Need some time to decide? Add a reminder for the{" "}
-            <a
-              href={rsvpReminderCalendarUrl()}
-              target="_blank"
-              rel="noopener"
-              className="calendar-link"
-            >
+            <a href="/calendar/rsvp-reminder.ics" className="calendar-link">
               RSVP to your calendar
               <CalendarCheckIcon />
+            </a>{" "}
+            (or{" "}
+            <a href={rsvpReminderCalendarUrl()} target="_blank" rel="noopener" className="calendar-link">
+              Google Calendar
             </a>
-            .
+            ).
           </p>
         </div>
       </section>

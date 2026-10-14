@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import CalendarCheckIcon from "./calendar-check-icon";
-import { downloadWeddingIcs } from "@/lib/calendar";
+import { GOOGLE_WEDDING_CALENDAR_URL } from "@/lib/calendar";
 
-// Shown on every "yes" confirmation: what happens next, plus a one-tap
-// calendar download for the wedding itself.
+// Shown on every "yes" confirmation: what happens next, plus the wedding
+// itself for any calendar (Apple and Outlook via .ics, or Google).
 export default function AttendingDetails() {
-  const [saved, setSaved] = useState(false);
+  const [opened, setOpened] = useState(false);
   return (
     <>
       <div className="details-panel">
@@ -20,20 +20,20 @@ export default function AttendingDetails() {
         </p>
       </div>
       <div className="calendar-link-row">
-        <a
-          href="#"
-          onClick={(e) => {
-            e.preventDefault();
-            downloadWeddingIcs();
-            setSaved(true);
-          }}
-          className="calendar-link"
-        >
+        <a href="/calendar/wedding.ics" onClick={() => setOpened(true)} className="calendar-link">
           Add the wedding to my calendar
           <CalendarCheckIcon />
         </a>
       </div>
-      {saved && <p className="saved-note">Saved — 14 to 16 November 2027 are held in your calendar.</p>}
+      <p className="calendar-alt">
+        Using Google Calendar?{" "}
+        <a href={GOOGLE_WEDDING_CALENDAR_URL} target="_blank" rel="noopener" className="calendar-link">
+          Add it there instead
+        </a>
+      </p>
+      {opened && (
+        <p className="saved-note">Your calendar should open with 14 to 16 November 2027 ready to save.</p>
+      )}
     </>
   );
 }
