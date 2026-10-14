@@ -2,7 +2,7 @@
 
 import { createServerClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getInviteByCode } from "@/lib/invites";
+import { getInviteByCode, InviteLookupError } from "@/lib/invites";
 import { rsvpsAreOpen, RSVPS_CLOSED_MID_FORM_MESSAGE } from "@/lib/rsvp-window";
 import { MAX_NAME_LENGTH } from "@/lib/site";
 
@@ -79,7 +79,13 @@ export async function submitRsvp(
    form in devtools can't rename a guest or add a plus-one to a solo invite.
    One row per invite: a second submission overwrites the first. */
 async function submitInviteRsvp(code: string, formData: FormData): Promise<RsvpState> {
-  const found = await getInviteByCode(code);
+  let found;
+  try {
+    found = await getInviteByCode(code);
+  } catch (e) {
+    if (!(e instanceof InviteLookupError)) throw e;
+    return { status: "error", message: "Something went wrong on our end. Please try again." };
+  }
   if (!found) {
     return {
       status: "error",

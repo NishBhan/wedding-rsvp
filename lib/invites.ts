@@ -42,6 +42,10 @@ function normalizeCode(raw: string) {
   return raw.trim().toLowerCase();
 }
 
+// Thrown when the database can't be reached, so callers can tell "this
+// link doesn't exist" (null) apart from "try again in a moment".
+export class InviteLookupError extends Error {}
+
 export async function getInviteByCode(
   rawCode: string
 ): Promise<{ invite: Invite; existing: InviteRsvp | null } | null> {
@@ -57,7 +61,7 @@ export async function getInviteByCode(
 
   if (error) {
     console.error("getInviteByCode failed:", error.message);
-    return null;
+    throw new InviteLookupError(error.message);
   }
   if (!data) return null;
 
@@ -76,7 +80,12 @@ export async function getInviteByCode(
     .eq("invite_id", row.id)
     .maybeSingle();
 
-  if (rsvpError) console.error("getInviteByCode rsvp lookup failed:", rsvpError.message);
+  // Without the existing reply the page would show a blank form and a
+  // couple's send would overwrite both answers, so treat this as an outage.
+  if (rsvpError) {
+    console.error("getInviteByCode rsvp lookup failed:", rsvpError.message);
+    throw new InviteLookupError(rsvpError.message);
+  }
 
   return {
     invite,
