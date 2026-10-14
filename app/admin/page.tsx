@@ -141,6 +141,7 @@ export default async function AdminPage({
         Download CSV
       </a>
 
+      <div className="table-scroll">
       <table>
         <thead>
           <tr>
@@ -184,6 +185,7 @@ export default async function AdminPage({
           ))}
         </tbody>
       </table>
+      </div>
 
       <h2 style={{ marginTop: 48 }}>Invites</h2>
       <p>
@@ -191,6 +193,7 @@ export default async function AdminPage({
         <code>partner_name</code> for a couple, tick <code>plus_one_allowed</code> for a single
         guest who may bring someone, or leave both empty for a single guest.
       </p>
+      <div className="table-scroll">
       <table>
         <thead>
           <tr>
@@ -220,6 +223,7 @@ export default async function AdminPage({
           })}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }
