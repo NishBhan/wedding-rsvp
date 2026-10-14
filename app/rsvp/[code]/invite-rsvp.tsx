@@ -149,8 +149,10 @@ export default function InviteRsvp({
   }
 
   if (state.status === "success") {
-    const guestComing = attending === "yes";
-    const partnerComing = isCouple && partnerAttending === "yes";
+    // For couples, trust what was saved: it may include the partner's own
+    // change made from their phone.
+    const guestComing = state.saved ? state.saved.attending : attending === "yes";
+    const partnerComing = isCouple && (state.saved ? state.saved.partnerAttending === true : partnerAttending === "yes");
     const anyoneComing = guestComing || partnerComing;
     const bothComing = isCouple ? guestComing && partnerComing : guestComing;
     const bringingSomeone = allowsPlusOne && guestComing && plusOne === "yes";
@@ -217,6 +219,18 @@ export default function InviteRsvp({
 
         <form action={formAction}>
           <input type="hidden" name="inviteCode" value={invite.code} />
+          {isCouple && (
+            <input
+              type="hidden"
+              name="changed"
+              value={[
+                attending !== yesNo(existing?.attending) && "attending",
+                partnerAttending !== yesNo(existing?.partnerAttending) && "partnerAttending",
+              ]
+                .filter(Boolean)
+                .join(",")}
+            />
+          )}
 
           {isCouple ? (
             [

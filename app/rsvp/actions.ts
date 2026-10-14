@@ -10,6 +10,9 @@ export type RsvpState = {
   message?: string;
   // Set when the reply arrived after the deadline and was not saved.
   closed?: boolean;
+  // Couple invites: both answers as saved, which can include a change the
+  // partner made from another phone a moment earlier.
+  saved?: { attending: boolean; partnerAttending: boolean | null };
 };
 
 export async function submitRsvp(
@@ -102,9 +105,28 @@ async function submitInviteRsvp(code: string, formData: FormData): Promise<RsvpS
     submitted_at: new Date().toISOString(),
   };
 
-  const { error } = await createAdminClient()
-    .from("rsvps")
-    .upsert(record, { onConflict: "invite_id" });
+  const supabase = createAdminClient();
+
+  // Couples often reply from two phones. When a reply already exists, write
+  // only the answers this person actually changed, so partners editing at
+  // the same time don't overwrite each other with a stale copy of the
+  // other's answer. ("changed" is absent only from pages loaded before this
+  // shipped; they fall back to writing both answers.)
+  const { error } =
+    isCouple && found.existing && formData.has("changed")
+      ? await supabase
+          .from("rsvps")
+          .update({
+            name: record.name,
+            partner_name: record.partner_name,
+            submitted_at: record.submitted_at,
+            ...(changedFields(formData).has("attending") ? { attending } : {}),
+            ...(changedFields(formData).has("partnerAttending")
+              ? { partner_attending: partnerAttending }
+              : {}),
+          })
+          .eq("invite_id", invite.id)
+      : await supabase.from("rsvps").upsert(record, { onConflict: "invite_id" });
 
   if (error) {
     console.error("Invite RSVP save failed:", error.message);
@@ -114,5 +136,23 @@ async function submitInviteRsvp(code: string, formData: FormData): Promise<RsvpS
     };
   }
 
+  if (isCouple) {
+    const { data } = await supabase
+      .from("rsvps")
+      .select("attending, partner_attending")
+      .eq("invite_id", invite.id)
+      .maybeSingle();
+    if (data) {
+      return {
+        status: "success",
+        saved: { attending: data.attending, partnerAttending: data.partner_attending },
+      };
+    }
+  }
+
   return { status: "success" };
+}
+
+function changedFields(formData: FormData) {
+  return new Set(String(formData.get("changed") || "").split(",").filter(Boolean));
 }
