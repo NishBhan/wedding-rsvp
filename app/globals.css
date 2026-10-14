@@ -1255,3 +1255,40 @@ th {
 .table-scroll table {
   min-width: 640px;
 }
+
+/* Fish leap above a "yes" confirmation: one arc out of the water, then
+   still. Reduced motion (see the media query at the top) shows the final
+   frame straight away. */
+.fish-leap {
+  display: block;
+  margin: 0 auto;
+  overflow: visible;
+}
+
+.fish-leap-fish {
+  transform-box: view-box;
+  animation: nwFishLeap 0.95s cubic-bezier(0.3, 0.7, 0.35, 1) both 0.15s;
+}
+
+.fish-leap-trail {
+  stroke-dashoffset: 0;
+  animation: nwFade 0.6s ease both 0.5s;
+}
+
+.fish-leap-splash {
+  animation: nwFade 0.4s ease both 0.2s;
+}
+
+@keyframes nwFishLeap {
+  from {
+    opacity: 0;
+    transform: translate(-58px, 52px) rotate(-18deg);
+  }
+  35% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

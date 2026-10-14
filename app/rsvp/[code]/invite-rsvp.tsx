@@ -7,6 +7,7 @@ import type { RsvpState } from "../actions";
 import { safeSubmitRsvp } from "../safe-submit";
 import AttendingDetails from "../../components/attending-details";
 import OrnamentDivider from "../../components/ornament-divider";
+import FishLeap from "../../components/fish-leap";
 import CalendarCheckIcon from "../../components/calendar-check-icon";
 import { RSVP_DEADLINE_LABEL, rsvpReminderCalendarUrl } from "@/lib/site";
 import type { Invite, InviteRsvp } from "@/lib/invites";
@@ -180,7 +181,7 @@ export default function InviteRsvp({
     return (
       <RsvpSection sectionRef={sectionRef} confirmation>
         <div key="done">
-          <OrnamentDivider />
+          {anyoneComing ? <FishLeap /> : <OrnamentDivider />}
           <h2 className="invite-rsvp-heading">{heading}</h2>
           <p>{body}</p>
           {bringingSomeone && (
