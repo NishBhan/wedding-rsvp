@@ -6,6 +6,18 @@ import InviteRsvp from "../rsvp/[code]/invite-rsvp";
 import { RSVP_DEADLINE_LABEL } from "@/lib/site";
 import { inviteUrl, type Invite, type InviteRsvp as ExistingRsvp } from "@/lib/invites";
 
+// The letter's first paragraph, written for each kind of invite: a couple
+// is invited together, and a guest who may bring someone hears so up front
+// rather than discovering it halfway through the RSVP.
+const OPENING: Record<Invite["type"], string> = {
+  couple:
+    "We’re getting married in Bengaluru, and it wouldn’t feel complete without you both. We would love for you to spend two days and two nights celebrating with us.",
+  plus_one:
+    "We’re getting married in Bengaluru, and it wouldn’t feel complete without you. We would love for you to spend two days and two nights celebrating with us, and you’re very welcome to bring someone with you.",
+  solo:
+    "We’re getting married in Bengaluru, and it wouldn’t feel complete without you. We would love for you to spend two days and two nights celebrating with us.",
+};
+
 /* The invitation a guest sees when they open their personal link
    (/rsvp/<code>): the couple and the dates, then a short letter addressed
    to the guest by name, then the RSVP itself on the same page, then the
@@ -49,11 +61,7 @@ export default function Invitation({
           <p className="invite-salutation">
             Dear <strong translate="no">{names}</strong>,
           </p>
-          <p>
-            We&rsquo;re getting married in Bengaluru, and it wouldn&rsquo;t feel
-            complete without you. We would love for you to spend two days and two
-            nights celebrating with us.
-          </p>
+          <p>{OPENING[invite.type]}</p>
           <p>
             We know a trip to India is a big one, and not an easy thing to say yes to
             this far ahead. We also have venues and rooms to book for everyone, and the
