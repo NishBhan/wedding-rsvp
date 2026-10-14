@@ -1,5 +1,6 @@
 "use client";
 
+import MonogramImg from "./components/monogram-img";
 /* Shown instead of Next's bare "Application error" if a page crashes in
    the browser (a dropped connection mid-send, a browser extension
    rewriting the page). Reassures the guest and gives them a way back. */
@@ -9,7 +10,7 @@ export default function Error() {
       <main className="rsvp-main">
         <div className="rsvp-shell">
           <div className="rsvp-section confirmation">
-            <img src="/assets/monogram-mark.png" alt="" className="monogram" />
+            <MonogramImg name="monogram-mark" alt="" className="monogram" />
             <h1>Something went wrong on this page.</h1>
             <p>
               If you were sending your RSVP, it may still have reached us. Please

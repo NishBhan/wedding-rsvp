@@ -5,6 +5,7 @@ import { useState } from "react";
 import type { RsvpState } from "./actions";
 import { safeSubmitRsvp } from "./safe-submit";
 import OrnamentDivider from "../components/ornament-divider";
+import MonogramImg from "../components/monogram-img";
 import AttendingDetails from "../components/attending-details";
 import { RSVP_DEADLINE_LABEL } from "@/lib/site";
 
@@ -111,7 +112,7 @@ export default function RsvpForm({ closed = false }: { closed?: boolean }) {
   if (closed) {
     return (
       <div className="rsvp-section confirmation">
-        <img src="/assets/monogram-mark.png" alt="" className="monogram" />
+        <MonogramImg name="monogram-mark" alt="" className="monogram" />
         <h1>Replies have now closed.</h1>
         <p>
           Thank you to everyone who replied. If your plans have changed, please message
@@ -129,7 +130,7 @@ export default function RsvpForm({ closed = false }: { closed?: boolean }) {
     return (
       <div className="rsvp-section confirmation">
         <OrnamentDivider />
-        <img src="/assets/monogram-mark.png" alt="" className="monogram" />
+        <MonogramImg name="monogram-mark" alt="" className="monogram" />
         <h1>
           {isAttending
             ? "We're so excited to celebrate with you!"
@@ -179,7 +180,7 @@ export default function RsvpForm({ closed = false }: { closed?: boolean }) {
 
       {step === "name" && (
         <div className="rsvp-section">
-          <img src="/assets/monogram-mark.png" alt="" className="step-monogram" />
+          <MonogramImg name="monogram-mark" alt="" className="step-monogram" />
           <h1>We&apos;d love to know if you can join us.</h1>
           <p className="subtitle">14&ndash;15 November 2027, Bengaluru, India.</p>
           <p className="rsvp-deadline">Kindly reply by {RSVP_DEADLINE_LABEL}</p>
