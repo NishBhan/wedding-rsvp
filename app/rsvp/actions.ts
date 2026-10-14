@@ -4,6 +4,9 @@ import { createServerClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getInviteByCode } from "@/lib/invites";
 import { rsvpsAreOpen, RSVPS_CLOSED_MID_FORM_MESSAGE } from "@/lib/rsvp-window";
+import { MAX_NAME_LENGTH } from "@/lib/site";
+
+const TOO_LONG_MESSAGE = `Names can be up to ${MAX_NAME_LENGTH} characters. Please shorten it a little.`;
 
 export type RsvpState = {
   status: "idle" | "success" | "error";
@@ -35,6 +38,10 @@ export async function submitRsvp(
 
   if (!name) {
     return { status: "error", message: "Please enter your name so we know who is replying." };
+  }
+
+  if (name.length > MAX_NAME_LENGTH || plusOneName.length > MAX_NAME_LENGTH) {
+    return { status: "error", message: TOO_LONG_MESSAGE };
   }
 
   if (attending && plusOne && !plusOneName) {
@@ -91,6 +98,10 @@ async function submitInviteRsvp(code: string, formData: FormData): Promise<RsvpS
       status: "error",
       message: "We just need a name for them — you can change it later.",
     };
+  }
+
+  if (plusOneName.length > MAX_NAME_LENGTH) {
+    return { status: "error", message: TOO_LONG_MESSAGE };
   }
 
   const isCouple = invite.type === "couple";

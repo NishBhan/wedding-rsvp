@@ -4,6 +4,10 @@
 export const SITE_URL = "https://www.fishfoundherwater.com/";
 export const RSVP_URL = "https://www.fishfoundherwater.com/rsvp";
 
+// Longest name a guest can type (their own on the shared page, or a
+// plus-one's). Enforced in the inputs and again in the submit action.
+export const MAX_NAME_LENGTH = 80;
+
 // Replies close at the end of 15 November 2026, London time. London is on
 // GMT (UTC+0) in November, so that is 23:59:59 UTC. This is the single
 // source for the deadline: the date guests see, the calendar reminder and

@@ -2,6 +2,7 @@
 
 import { useFormState, useFormStatus } from "react-dom";
 import { useState } from "react";
+import { MAX_NAME_LENGTH } from "@/lib/site";
 import type { RsvpState } from "./actions";
 import { safeSubmitRsvp } from "./safe-submit";
 import OrnamentDivider from "../components/ornament-divider";
@@ -193,6 +194,7 @@ export default function RsvpForm({ closed = false }: { closed?: boolean }) {
             <input
               type="text"
               id="name"
+              maxLength={MAX_NAME_LENGTH}
               className="rsvp-input"
               value={name}
               onChange={(e) => {
@@ -291,6 +293,7 @@ export default function RsvpForm({ closed = false }: { closed?: boolean }) {
               <input
                 type="text"
                 id="plusOneName"
+                maxLength={MAX_NAME_LENGTH}
                 name="plusOneName"
                 className="rsvp-input"
                 value={plusOneName}

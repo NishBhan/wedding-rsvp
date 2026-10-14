@@ -2,6 +2,7 @@
 
 import { useFormState, useFormStatus } from "react-dom";
 import { useEffect, useRef, useState } from "react";
+import { MAX_NAME_LENGTH } from "@/lib/site";
 import type { RsvpState } from "../actions";
 import { safeSubmitRsvp } from "../safe-submit";
 import AttendingDetails from "../../components/attending-details";
@@ -287,6 +288,7 @@ export default function InviteRsvp({
                   <input
                     type="text"
                     id="plusOneName"
+                    maxLength={MAX_NAME_LENGTH}
                     name="plusOneName"
                     className="rsvp-input"
                     value={plusOneName}

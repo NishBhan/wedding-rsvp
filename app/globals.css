@@ -925,6 +925,7 @@ button:disabled {
   margin-top: 8px;
   font-size: 21px;
   color: #12294d;
+  overflow-wrap: anywhere;
 }
 
 .details-panel {
