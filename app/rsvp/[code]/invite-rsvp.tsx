@@ -55,6 +55,24 @@ function Choice({
   );
 }
 
+// The reply we have for this invite, in a sentence, for returning guests
+// and for the closed view.
+function replySummary(existing: InviteRsvp, invite: Invite) {
+  const guest = invite.guestName;
+  const partner = invite.partnerName ?? "";
+  if (invite.type === "couple") {
+    const a = existing.attending;
+    const b = existing.partnerAttending === true;
+    if (a && b) return "You’re both coming.";
+    if (!a && !b) return "You’ve both let us know you can’t make it.";
+    return `${a ? guest : partner} is coming, and ${a ? partner : guest} can’t make it.`;
+  }
+  if (!existing.attending) return "You’ve let us know you can’t make it.";
+  return existing.plusOne && existing.plusOneName
+    ? `You’re coming, with ${existing.plusOneName}.`
+    : "You’re coming.";
+}
+
 /* One stable <section> for every state (form, confirmation, closed). Each
    state is a keyed <div>, so switching state swaps that whole <div> rather
    than editing text nodes one by one. That matters because browser
@@ -117,26 +135,17 @@ export default function InviteRsvp({
   }, [state.status, state.closed]);
 
   if (closed || state.closed) {
-    const said = (coming: boolean | null | undefined) =>
-      coming ? "coming" : "not able to make it";
-    let summary: string | null = null;
-    if (existing) {
-      if (isCouple) {
-        summary = `${guest}: ${said(existing.attending)}. ${partner}: ${said(existing.partnerAttending)}.`;
-      } else if (existing.attending) {
-        summary =
-          existing.plusOne && existing.plusOneName
-            ? `You told us you’ll be there, with ${existing.plusOneName}.`
-            : "You told us you’ll be there.";
-      } else {
-        summary = "You told us you can’t make it.";
-      }
-    }
+    const summary = existing ? replySummary(existing, invite) : null;
+    const coming = Boolean(existing && (existing.attending || existing.partnerAttending));
+    // After the deadline the heading follows the reply: guests who are
+    // coming are simply told we'll see them; everyone else hears that
+    // replies have closed, kindly.
+    const closedHeading = coming && !state.closed ? "See you in Bengaluru" : "Replies have now closed";
     return (
       <RsvpSection sectionRef={sectionRef} confirmation>
         <div key="closed">
           <OrnamentDivider />
-          <h2 className="invite-rsvp-heading">Replies have now closed</h2>
+          <h2 className="invite-rsvp-heading">{closedHeading}</h2>
           {state.closed && <p className="rsvp-error">{state.message}</p>}
           <p>{summary ?? "We didn’t receive a reply from you before replies closed."}</p>
           {!state.closed && (
@@ -210,12 +219,16 @@ export default function InviteRsvp({
       <div key="form">
         <OrnamentDivider />
         <h2 className="invite-rsvp-heading">
-          {isCouple ? "Will you both join us?" : "Will you join us?"}
+          {existing ? "Your reply" : isCouple ? "Will you both join us?" : "Will you join us?"}
         </h2>
-        <p className="rsvp-deadline">Kindly reply by {RSVP_DEADLINE_LABEL}</p>
+        <p className="rsvp-deadline">
+          {existing
+            ? `You can change it until ${RSVP_DEADLINE_LABEL}`
+            : `Kindly reply by ${RSVP_DEADLINE_LABEL}`}
+        </p>
         {existing && (
           <p className="rsvp-fine-note">
-            You&apos;ve already replied, thank you. You can change your answer below.
+            {`${replySummary(existing, invite)} Nothing to do unless your plans have changed.`}
           </p>
         )}
 

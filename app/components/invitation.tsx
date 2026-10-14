@@ -59,7 +59,8 @@ export default function Invitation({
 
         <div className="invite-letter">
           <p className="invite-salutation">
-            Dear <strong translate="no">{names}</strong>,
+            {existing && !closed ? "Welcome back," : "Dear"}{" "}
+            <strong translate="no">{names}</strong>,
           </p>
           <p>{OPENING[invite.type]}</p>
           <p>
