@@ -142,49 +142,49 @@ export default async function AdminPage({
       </a>
 
       <div className="table-scroll">
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Attending</th>
-            <th>Plus One / Partner</th>
-            <th>Via</th>
-            <th>Submitted</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rsvps.map((r) => (
-            <tr key={r.id}>
-              <td>{r.name}</td>
-              <td>
-                <span className={`badge ${r.attending ? "yes" : "no"}`}>
-                  {r.attending ? "Yes" : "No"}
-                </span>
-              </td>
-              <td>
-                {r.partner_name
-                  ? `${r.partner_name}: ${r.partner_attending ? "Yes" : "No"}`
-                  : r.plus_one
-                    ? r.plus_one_name || "Unnamed"
-                    : "-"}
-              </td>
-              <td>
-                {r.invite_id ? (
-                  "Personal link"
-                ) : possibleDuplicates(r).length > 0 ? (
-                  <>
-                    Shared link.{" "}
-                    <strong>Possible duplicate of: {possibleDuplicates(r).join("; ")}</strong>
-                  </>
-                ) : (
-                  "Shared link"
-                )}
-              </td>
-              <td>{new Date(r.submitted_at).toLocaleString("en-GB")}</td>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Attending</th>
+              <th>Plus One / Partner</th>
+              <th>Via</th>
+              <th>Submitted</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {rsvps.map((r) => (
+              <tr key={r.id}>
+                <td>{r.name}</td>
+                <td>
+                  <span className={`badge ${r.attending ? "yes" : "no"}`}>
+                    {r.attending ? "Yes" : "No"}
+                  </span>
+                </td>
+                <td>
+                  {r.partner_name
+                    ? `${r.partner_name}: ${r.partner_attending ? "Yes" : "No"}`
+                    : r.plus_one
+                      ? r.plus_one_name || "Unnamed"
+                      : "-"}
+                </td>
+                <td>
+                  {r.invite_id ? (
+                    "Personal link"
+                  ) : possibleDuplicates(r).length > 0 ? (
+                    <>
+                      Shared link.{" "}
+                      <strong>Possible duplicate of: {possibleDuplicates(r).join("; ")}</strong>
+                    </>
+                  ) : (
+                    "Shared link"
+                  )}
+                </td>
+                <td>{new Date(r.submitted_at).toLocaleString("en-GB")}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       <h2 style={{ marginTop: 48 }}>Invites</h2>
@@ -194,35 +194,35 @@ export default async function AdminPage({
         guest who may bring someone, or leave both empty for a single guest.
       </p>
       <div className="table-scroll">
-      <table>
-        <thead>
-          <tr>
-            <th>Invited</th>
-            <th>Type</th>
-            <th>Personal link</th>
-            <th>Replied</th>
-          </tr>
-        </thead>
-        <tbody>
-          {invites.map((i) => {
-            const url = inviteUrl(i.code);
-            return (
-              <tr key={i.id}>
-                <td>{i.partner_name ? `${i.guest_name} & ${i.partner_name}` : i.guest_name}</td>
-                <td>{INVITE_TYPE_LABEL[inviteTypeOf(i)]}</td>
-                <td>
-                  <a href={url}>{url}</a>
-                </td>
-                <td>
-                  <span className={`badge ${rsvpByInvite.has(i.id) ? "yes" : "no"}`}>
-                    {rsvpByInvite.has(i.id) ? "Yes" : "Not yet"}
-                  </span>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+        <table>
+          <thead>
+            <tr>
+              <th>Invited</th>
+              <th>Type</th>
+              <th>Personal link</th>
+              <th>Replied</th>
+            </tr>
+          </thead>
+          <tbody>
+            {invites.map((i) => {
+              const url = inviteUrl(i.code);
+              return (
+                <tr key={i.id}>
+                  <td>{i.partner_name ? `${i.guest_name} & ${i.partner_name}` : i.guest_name}</td>
+                  <td>{INVITE_TYPE_LABEL[inviteTypeOf(i)]}</td>
+                  <td>
+                    <a href={url}>{url}</a>
+                  </td>
+                  <td>
+                    <span className={`badge ${rsvpByInvite.has(i.id) ? "yes" : "no"}`}>
+                      {rsvpByInvite.has(i.id) ? "Yes" : "Not yet"}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     </div>
   );
