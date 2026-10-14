@@ -115,16 +115,3 @@ export async function checkExistingRsvp(rawName: string): Promise<ExistingMatch>
 
   return { kind: "none" };
 }
-
-/* Removes someone as a plus-one from the primary guest's row, without
-   touching the primary guest's own attendance. Used only when a plus-one
-   says "actually, I can't make it" after being matched by checkExistingRsvp. */
-export async function removeSelfAsPlusOne(primaryId: string): Promise<{ ok: boolean }> {
-  const supabase = createAdminClient();
-  const { error } = await supabase
-    .from("rsvps")
-    .update({ plus_one: false, plus_one_name: null })
-    .eq("id", primaryId);
-
-  return { ok: !error };
-}
