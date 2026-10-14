@@ -1282,3 +1282,18 @@ th {
   margin-top: 22px;
   font-size: 19px;
 }
+
+/* Line breaks: headings split into even lines instead of a long line and
+   a stray word, and paragraphs avoid a single word on their last line.
+   Browsers without support simply ignore these. */
+h1,
+h2,
+.invite-rsvp-heading,
+.details-panel-label,
+.rsvp-deadline {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
