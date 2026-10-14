@@ -71,18 +71,32 @@ body {
 /* The restrained double-line stationery frame: a Delft hairline outside,
    a fine antique-gold rule inset just inside it. Corner botanical sprigs
    only appear at desktop widths, where there's room for them. */
+/* The page border: a band of Delft tiles (a blue four-petal flower between
+   gold rules), as on the save-the-date, with a fine gold rule inside it.
+   Two tiny inline SVG tiles repeated along each edge; no image downloads. */
 .stationery-frame {
+  --tile: 14px;
   position: fixed;
-  inset: clamp(9px, 1.5vw, 26px);
+  inset: 0;
   z-index: 40;
   pointer-events: none;
-  border: 1px solid rgba(27, 58, 107, 0.24);
+  background:
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2014%2014%22%3E%3Crect%20width%3D%2214%22%20height%3D%2214%22%20fill%3D%22%23f8f2e6%22%2F%3E%3Cpath%20d%3D%22M0%20.5H14M0%2013.5H14%22%20stroke%3D%22%23B08D4F%22%20stroke-width%3D%221%22%2F%3E%3Cellipse%20cx%3D%227%22%20cy%3D%224.4%22%20rx%3D%221.4%22%20ry%3D%222.2%22%20transform%3D%22rotate%280%207%207%29%22%20fill%3D%22%231B3A6B%22%2F%3E%3Cellipse%20cx%3D%227%22%20cy%3D%224.4%22%20rx%3D%221.4%22%20ry%3D%222.2%22%20transform%3D%22rotate%2890%207%207%29%22%20fill%3D%22%231B3A6B%22%2F%3E%3Cellipse%20cx%3D%227%22%20cy%3D%224.4%22%20rx%3D%221.4%22%20ry%3D%222.2%22%20transform%3D%22rotate%28180%207%207%29%22%20fill%3D%22%231B3A6B%22%2F%3E%3Cellipse%20cx%3D%227%22%20cy%3D%224.4%22%20rx%3D%221.4%22%20ry%3D%222.2%22%20transform%3D%22rotate%28270%207%207%29%22%20fill%3D%22%231B3A6B%22%2F%3E%3Ccircle%20cx%3D%227%22%20cy%3D%227%22%20r%3D%221.1%22%20fill%3D%22%23B08D4F%22%2F%3E%3C%2Fsvg%3E") top left / var(--tile) var(--tile) repeat-x,
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2014%2014%22%3E%3Crect%20width%3D%2214%22%20height%3D%2214%22%20fill%3D%22%23f8f2e6%22%2F%3E%3Cpath%20d%3D%22M0%20.5H14M0%2013.5H14%22%20stroke%3D%22%23B08D4F%22%20stroke-width%3D%221%22%2F%3E%3Cellipse%20cx%3D%227%22%20cy%3D%224.4%22%20rx%3D%221.4%22%20ry%3D%222.2%22%20transform%3D%22rotate%280%207%207%29%22%20fill%3D%22%231B3A6B%22%2F%3E%3Cellipse%20cx%3D%227%22%20cy%3D%224.4%22%20rx%3D%221.4%22%20ry%3D%222.2%22%20transform%3D%22rotate%2890%207%207%29%22%20fill%3D%22%231B3A6B%22%2F%3E%3Cellipse%20cx%3D%227%22%20cy%3D%224.4%22%20rx%3D%221.4%22%20ry%3D%222.2%22%20transform%3D%22rotate%28180%207%207%29%22%20fill%3D%22%231B3A6B%22%2F%3E%3Cellipse%20cx%3D%227%22%20cy%3D%224.4%22%20rx%3D%221.4%22%20ry%3D%222.2%22%20transform%3D%22rotate%28270%207%207%29%22%20fill%3D%22%231B3A6B%22%2F%3E%3Ccircle%20cx%3D%227%22%20cy%3D%227%22%20r%3D%221.1%22%20fill%3D%22%23B08D4F%22%2F%3E%3C%2Fsvg%3E") bottom left / var(--tile) var(--tile) repeat-x,
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2014%2014%22%3E%3Crect%20width%3D%2214%22%20height%3D%2214%22%20fill%3D%22%23f8f2e6%22%2F%3E%3Cpath%20d%3D%22M.5%200V14M13.5%200V14%22%20stroke%3D%22%23B08D4F%22%20stroke-width%3D%221%22%2F%3E%3Cellipse%20cx%3D%227%22%20cy%3D%224.4%22%20rx%3D%221.4%22%20ry%3D%222.2%22%20transform%3D%22rotate%280%207%207%29%22%20fill%3D%22%231B3A6B%22%2F%3E%3Cellipse%20cx%3D%227%22%20cy%3D%224.4%22%20rx%3D%221.4%22%20ry%3D%222.2%22%20transform%3D%22rotate%2890%207%207%29%22%20fill%3D%22%231B3A6B%22%2F%3E%3Cellipse%20cx%3D%227%22%20cy%3D%224.4%22%20rx%3D%221.4%22%20ry%3D%222.2%22%20transform%3D%22rotate%28180%207%207%29%22%20fill%3D%22%231B3A6B%22%2F%3E%3Cellipse%20cx%3D%227%22%20cy%3D%224.4%22%20rx%3D%221.4%22%20ry%3D%222.2%22%20transform%3D%22rotate%28270%207%207%29%22%20fill%3D%22%231B3A6B%22%2F%3E%3Ccircle%20cx%3D%227%22%20cy%3D%227%22%20r%3D%221.1%22%20fill%3D%22%23B08D4F%22%2F%3E%3C%2Fsvg%3E") top left / var(--tile) var(--tile) repeat-y,
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2014%2014%22%3E%3Crect%20width%3D%2214%22%20height%3D%2214%22%20fill%3D%22%23f8f2e6%22%2F%3E%3Cpath%20d%3D%22M.5%200V14M13.5%200V14%22%20stroke%3D%22%23B08D4F%22%20stroke-width%3D%221%22%2F%3E%3Cellipse%20cx%3D%227%22%20cy%3D%224.4%22%20rx%3D%221.4%22%20ry%3D%222.2%22%20transform%3D%22rotate%280%207%207%29%22%20fill%3D%22%231B3A6B%22%2F%3E%3Cellipse%20cx%3D%227%22%20cy%3D%224.4%22%20rx%3D%221.4%22%20ry%3D%222.2%22%20transform%3D%22rotate%2890%207%207%29%22%20fill%3D%22%231B3A6B%22%2F%3E%3Cellipse%20cx%3D%227%22%20cy%3D%224.4%22%20rx%3D%221.4%22%20ry%3D%222.2%22%20transform%3D%22rotate%28180%207%207%29%22%20fill%3D%22%231B3A6B%22%2F%3E%3Cellipse%20cx%3D%227%22%20cy%3D%224.4%22%20rx%3D%221.4%22%20ry%3D%222.2%22%20transform%3D%22rotate%28270%207%207%29%22%20fill%3D%22%231B3A6B%22%2F%3E%3Ccircle%20cx%3D%227%22%20cy%3D%227%22%20r%3D%221.1%22%20fill%3D%22%23B08D4F%22%2F%3E%3C%2Fsvg%3E") top right / var(--tile) var(--tile) repeat-y;
+}
+
+@media (min-width: 768px) {
+  .stationery-frame {
+    --tile: 18px;
+  }
 }
 
 .stationery-frame::before {
   content: "";
   position: absolute;
-  inset: clamp(4px, 0.45vw, 7px);
+  inset: calc(var(--tile) + 4px);
   border: 1px solid rgba(176, 141, 79, 0.38);
 }
 
@@ -99,14 +113,14 @@ body {
 }
 
 .frame-corner-tr {
-  top: 15px;
-  right: 15px;
+  top: calc(var(--tile) + 10px);
+  right: calc(var(--tile) + 10px);
   transform: rotate(90deg);
 }
 
 .frame-corner-bl {
-  bottom: 15px;
-  left: 15px;
+  bottom: calc(var(--tile) + 10px);
+  left: calc(var(--tile) + 10px);
   transform: rotate(270deg);
 }
 
