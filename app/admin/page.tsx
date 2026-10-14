@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { login, logout } from "./actions";
 import { isAdminAuthed } from "@/lib/admin-auth";
@@ -28,6 +29,9 @@ const INVITE_TYPE_LABEL: Record<InviteType, string> = {
   plus_one: "Single + 1",
   solo: "Single",
 };
+
+// Keep the dashboard out of search engines.
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 export default async function AdminPage({
   searchParams,

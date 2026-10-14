@@ -17,10 +17,10 @@ const cormorant = Cormorant_Garamond({
 const siteUrl = SITE_URL.replace(/\/$/, "");
 
 export const metadata: Metadata = {
-  title: "FishfoundherWater| Wedding",
+  title: "FishfoundherWater | Wedding",
   description: "Everything you need for Nishtha & Wouter's wedding - 14-15th November 2027",
   openGraph: {
-    title: "FishfoundherWater| Wedding",
+    title: "FishfoundherWater | Wedding",
     description: "Everything you need for Nishtha & Wouter's wedding - 14-15th November 2027",
     url: siteUrl,
     siteName: "Nishtha & Wouter",
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "FishfoundherWater| Wedding",
+    title: "FishfoundherWater | Wedding",
     description: "Everything you need for Nishtha & Wouter's wedding - 14-15th November 2027",
     images: [`${siteUrl}/og-image.png`],
   },
