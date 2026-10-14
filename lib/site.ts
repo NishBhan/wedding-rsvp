@@ -4,9 +4,14 @@
 export const SITE_URL = "https://www.fishfoundherwater.com/";
 export const RSVP_URL = "https://www.fishfoundherwater.com/rsvp";
 
+// Replies close at the end of 15 November 2026, London time. London is on
+// GMT (UTC+0) in November, so that is 23:59:59 UTC. Guests only ever see
+// the date, never the exact time.
+export const RSVP_CLOSES_AT = "2026-11-15T23:59:59Z";
+
 // The reply-by date, shown on the save-the-date page, the RSVP form and
-// in the calendar reminder. Change all three here.
-export const RSVP_DEADLINE_LABEL = "8th November 2026";
+// in the calendar reminder.
+export const RSVP_DEADLINE_LABEL = "15th November 2026";
 
 // Prefilled Google Calendar link for the "not ready to RSVP yet" reminder
 // on the save-the-date page: an all-day nudge on 7 November 2026, the day

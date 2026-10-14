@@ -82,7 +82,7 @@ const PROGRESS_LABEL: Record<Step, string> = {
   decline: "",
 };
 
-export default function RsvpForm() {
+export default function RsvpForm({ closed = false }: { closed?: boolean }) {
   const [state, formAction] = useFormState(submitRsvp, initialState);
   const [step, setStep] = useState<Step>("name");
   const [name, setName] = useState("");
@@ -106,6 +106,19 @@ export default function RsvpForm() {
   };
 
   const firstName = name.trim().split(" ")[0] || "";
+
+  if (closed) {
+    return (
+      <div className="rsvp-section confirmation">
+        <img src="/assets/monogram-mark.png" alt="" className="monogram" />
+        <h1>Replies have now closed.</h1>
+        <p>
+          Thank you to everyone who replied. If your plans have changed, please message
+          Nishtha or Wouter directly and we&rsquo;ll sort it out together.
+        </p>
+      </div>
+    );
+  }
 
   // --- Post-submit confirmation ---
   if (state.status === "success") {

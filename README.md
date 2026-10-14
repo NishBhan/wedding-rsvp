@@ -89,6 +89,15 @@ later if you want.
   `admin.ts` (service role key, used only by the gated admin page).
 - `supabase/schema.sql` — run this once in the Supabase SQL editor.
 
+## RSVP deadline
+
+Replies close at the end of 15 November 2026, London time. The cut-off is
+`RSVP_CLOSES_AT` in `lib/site.ts`; the date guests see comes from the same
+file. After it, the submit action refuses every reply and both RSVP pages
+show a read-only "Replies have now closed" view. To try the closed view on
+a test deployment, set `RSVP_CLOSES_AT_OVERRIDE` to a past ISO timestamp
+there (never in production).
+
 ## Things you might want to add later
 
 - **Duplicate detection**: right now two people can both submit as
@@ -98,6 +107,3 @@ later if you want.
 - **Edit an existing RSVP**: currently a second submission is a new row,
   not an update. Same tradeoff as above — cheap to skip, cheap to add if
   it becomes annoying.
-- **A closing date**: the form doesn't currently check whether it's past
-  8 November 2026 (`RSVP_DEADLINE_LABEL` in `lib/site.ts`). Easy to add a date check in `actions.ts` if you want
-  the form to stop accepting responses automatically.

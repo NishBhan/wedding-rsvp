@@ -3,16 +3,25 @@
 import { createServerClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getInviteByCode } from "@/lib/invites";
+import { rsvpsAreOpen, RSVPS_CLOSED_MID_FORM_MESSAGE } from "@/lib/rsvp-window";
 
 export type RsvpState = {
   status: "idle" | "success" | "error";
   message?: string;
+  // Set when the reply arrived after the deadline and was not saved.
+  closed?: boolean;
 };
 
 export async function submitRsvp(
   _prevState: RsvpState,
   formData: FormData
 ): Promise<RsvpState> {
+  // The lock: nothing is written after the deadline, whichever page the
+  // reply came from or however long the form was left open.
+  if (!rsvpsAreOpen()) {
+    return { status: "error", closed: true, message: RSVPS_CLOSED_MID_FORM_MESSAGE };
+  }
+
   const name = String(formData.get("name") || "").trim();
   const attending = formData.get("attending") === "yes";
   const plusOne = formData.get("plusOne") === "yes";

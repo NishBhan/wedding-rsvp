@@ -60,10 +60,12 @@ export default function InviteRsvp({
   invite,
   existing,
   inviteLink,
+  closed,
 }: {
   invite: Invite;
   existing: InviteRsvp | null;
   inviteLink: string;
+  closed: boolean;
 }) {
   const [state, formAction] = useFormState(submitRsvp, initialState);
   const [attending, setAttending] = useState<YesNo>(yesNo(existing?.attending));
@@ -80,10 +82,40 @@ export default function InviteRsvp({
   const partner = invite.partnerName ?? "";
 
   useEffect(() => {
-    if (state.status === "success") {
+    if (state.status === "success" || state.closed) {
       sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
-  }, [state.status]);
+  }, [state.status, state.closed]);
+
+  if (closed || state.closed) {
+    const said = (coming: boolean | null | undefined) =>
+      coming ? "coming" : "not able to make it";
+    let summary: string | null = null;
+    if (existing) {
+      if (isCouple) {
+        summary = `${guest}: ${said(existing.attending)}. ${partner}: ${said(existing.partnerAttending)}.`;
+      } else if (existing.attending) {
+        summary =
+          existing.plusOne && existing.plusOneName
+            ? `You told us you’ll be there, with ${existing.plusOneName}.`
+            : "You told us you’ll be there.";
+      } else {
+        summary = "You told us you can’t make it.";
+      }
+    }
+    return (
+      <section ref={sectionRef} id="rsvp" className="invite-rsvp confirmation">
+        <OrnamentDivider />
+        <h2 className="invite-rsvp-heading">Replies have now closed</h2>
+        {state.closed && <p className="rsvp-error">{state.message}</p>}
+        <p>{summary ?? "We didn’t receive a reply from you before replies closed."}</p>
+        <p className="rsvp-fine-note">
+          If anything has changed, please message Nishtha or Wouter directly and
+          we&rsquo;ll sort it out together.
+        </p>
+      </section>
+    );
+  }
 
   if (state.status === "success") {
     const guestComing = attending === "yes";

@@ -13,9 +13,11 @@ import { inviteUrl, type Invite, type InviteRsvp as ExistingRsvp } from "@/lib/i
 export default function Invitation({
   invite,
   existing,
+  closed,
 }: {
   invite: Invite;
   existing: ExistingRsvp | null;
+  closed: boolean;
 }) {
   const names = invite.partnerName
     ? `${invite.guestName} & ${invite.partnerName}`
@@ -56,7 +58,7 @@ export default function Invitation({
             We know a trip to India is a big one, and not an easy thing to say yes to
             this far ahead. We also have venues and rooms to book for everyone, and the
             sooner we know who&rsquo;s coming, the better we can look after you when
-            you&rsquo;re here. If you can, let us know by {RSVP_DEADLINE_LABEL}.
+            you&rsquo;re here.{!closed && ` If you can, let us know by ${RSVP_DEADLINE_LABEL}.`}
           </p>
           <p className="invite-signoff">
             With love,
@@ -65,7 +67,12 @@ export default function Invitation({
           </p>
         </div>
 
-        <InviteRsvp invite={invite} existing={existing} inviteLink={inviteUrl(invite.code)} />
+        <InviteRsvp
+          invite={invite}
+          existing={existing}
+          inviteLink={inviteUrl(invite.code)}
+          closed={closed}
+        />
       </section>
 
       <HeroLandscape />
