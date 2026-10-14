@@ -252,31 +252,16 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 14px;
 }
 
-.ornament-divider span:not(.diamond) {
-  width: clamp(46px, 9vw, 100px);
-  height: 1px;
-  background: linear-gradient(90deg, rgba(176, 141, 79, 0), var(--gold));
+.ornament-divider svg {
+  display: block;
+  overflow: visible;
 }
 
-.ornament-divider span:last-child {
-  background: linear-gradient(90deg, var(--gold), rgba(176, 141, 79, 0));
-}
 
-.ornament-divider .diamond {
-  width: 7px;
-  height: 7px;
-  border: 1px solid var(--gold);
-  transform: rotate(45deg);
-  background: none;
-  flex-shrink: 0;
-}
 
-.ornament-divider.hero-size span:not(.diamond) {
-  width: clamp(40px, 10vw, 90px);
-}
+
 
 .hero-dates {
   margin: clamp(14px, 2.6vw, 26px) 0 0;
