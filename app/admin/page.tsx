@@ -68,14 +68,21 @@ export default async function AdminPage({
   const invites = (inviteData as InviteRow[]) ?? [];
   const rsvpByInvite = new Map(rsvps.filter((r) => r.invite_id).map((r) => [r.invite_id, r]));
 
-  // "Attending" counts responses where anyone on them is coming; headcount
-  // counts people (guest + plus-one + named partner).
-  const attendingCount = rsvps.filter((r) => r.attending || r.partner_attending).length;
-  const declinedCount = rsvps.length - attendingCount;
-  const plusOnesCount = rsvps.filter((r) => r.attending && r.plus_one).length;
-  const partnersCount = rsvps.filter((r) => r.partner_attending).length;
-  const headcount =
-    rsvps.filter((r) => r.attending).length + plusOnesCount + partnersCount;
+  // Every total counts people, not responses: the guest, their plus-one
+  // (only if the guest is coming) and, on a couple invite, the partner,
+  // whose answer is independent of the guest's.
+  const peopleAttending = rsvps.reduce(
+    (n, r) =>
+      n +
+      (r.attending ? 1 : 0) +
+      (r.attending && r.plus_one ? 1 : 0) +
+      (r.partner_attending === true ? 1 : 0),
+    0
+  );
+  const peopleDeclining = rsvps.reduce(
+    (n, r) => n + (r.attending ? 0 : 1) + (r.partner_attending === false ? 1 : 0),
+    0
+  );
   const awaitingCount = invites.filter((i) => !rsvpByInvite.has(i.id)).length;
 
   return (
@@ -94,20 +101,16 @@ export default async function AdminPage({
 
       <div className="stats">
         <div className="stat">
+          <span className="number">{peopleAttending}</span>
+          <span className="label">People attending</span>
+        </div>
+        <div className="stat">
+          <span className="number">{peopleDeclining}</span>
+          <span className="label">People declining</span>
+        </div>
+        <div className="stat">
           <span className="number">{rsvps.length}</span>
           <span className="label">Responses</span>
-        </div>
-        <div className="stat">
-          <span className="number">{attendingCount}</span>
-          <span className="label">Attending</span>
-        </div>
-        <div className="stat">
-          <span className="number">{declinedCount}</span>
-          <span className="label">Declined</span>
-        </div>
-        <div className="stat">
-          <span className="number">{headcount}</span>
-          <span className="label">Total headcount</span>
         </div>
         <div className="stat">
           <span className="number">{awaitingCount}</span>
