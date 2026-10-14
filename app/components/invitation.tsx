@@ -47,7 +47,7 @@ export default function Invitation({
 
         <div className="invite-letter">
           <p className="invite-salutation">
-            Dear <strong>{names}</strong>,
+            Dear <strong translate="no">{names}</strong>,
           </p>
           <p>
             We&rsquo;re getting married in Bengaluru, and it wouldn&rsquo;t feel

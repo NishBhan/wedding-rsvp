@@ -52,6 +52,32 @@ function Choice({
   );
 }
 
+/* One stable <section> for every state (form, confirmation, closed). Each
+   state is a keyed <div>, so switching state swaps that whole <div> rather
+   than editing text nodes one by one. That matters because browser
+   translation (Chrome, Safari) replaces page text with its own nodes, and
+   React crashed ("removeChild") when it later tried to remove text nodes
+   that translation had already moved. */
+function RsvpSection({
+  sectionRef,
+  confirmation = false,
+  children,
+}: {
+  sectionRef: React.RefObject<HTMLElement>;
+  confirmation?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <section
+      ref={sectionRef}
+      id="rsvp"
+      className={confirmation ? "invite-rsvp confirmation" : "invite-rsvp"}
+    >
+      {children}
+    </section>
+  );
+}
+
 /* The whole RSVP for a personal invite link, on one page: pick an answer
    (and a plus-one, or each person's answer for a couple), then send. The
    confirmation replaces the form in place. Reopening the link pre-fills the
@@ -104,16 +130,18 @@ export default function InviteRsvp({
       }
     }
     return (
-      <section ref={sectionRef} id="rsvp" className="invite-rsvp confirmation">
-        <OrnamentDivider />
-        <h2 className="invite-rsvp-heading">Replies have now closed</h2>
-        {state.closed && <p className="rsvp-error">{state.message}</p>}
-        <p>{summary ?? "We didn’t receive a reply from you before replies closed."}</p>
-        <p className="rsvp-fine-note">
-          If anything has changed, please message Nishtha or Wouter directly and
-          we&rsquo;ll sort it out together.
-        </p>
-      </section>
+      <RsvpSection sectionRef={sectionRef} confirmation>
+        <div key="closed">
+          <OrnamentDivider />
+          <h2 className="invite-rsvp-heading">Replies have now closed</h2>
+          {state.closed && <p className="rsvp-error">{state.message}</p>}
+          <p>{summary ?? "We didn’t receive a reply from you before replies closed."}</p>
+          <p className="rsvp-fine-note">
+            If anything has changed, please message Nishtha or Wouter directly and
+            we&rsquo;ll sort it out together.
+          </p>
+        </div>
+      </RsvpSection>
     );
   }
 
@@ -144,22 +172,25 @@ export default function InviteRsvp({
     }
 
     return (
-      <section ref={sectionRef} id="rsvp" className="invite-rsvp confirmation">
-        <OrnamentDivider />
-        <h2 className="invite-rsvp-heading">{heading}</h2>
-        <p>{body}</p>
-        {bringingSomeone && (
-          <div className="joining-panel">
-            <span className="joining-label">JOINING YOU</span>
-            <div className="joining-name">{plusOneName.trim()}</div>
-          </div>
-        )}
-        {anyoneComing && <AttendingDetails />}
-        <p className="rsvp-fine-note">
-          Plans change, and that&rsquo;s alright. You can come back to this link and update
-          your reply until {RSVP_DEADLINE_LABEL}.
-        </p>
-      </section>
+      <RsvpSection sectionRef={sectionRef} confirmation>
+        <div key="done">
+          <OrnamentDivider />
+          <h2 className="invite-rsvp-heading">{heading}</h2>
+          <p>{body}</p>
+          {bringingSomeone && (
+            <div className="joining-panel">
+              <span className="joining-label">JOINING YOU</span>
+              <div className="joining-name" translate="no">
+                {plusOneName.trim()}
+              </div>
+            </div>
+          )}
+          {anyoneComing && <AttendingDetails />}
+          <p className="rsvp-fine-note">
+            {`Plans change, and that’s alright. You can come back to this link and update your reply until ${RSVP_DEADLINE_LABEL}.`}
+          </p>
+        </div>
+      </RsvpSection>
     );
   }
 
@@ -168,110 +199,114 @@ export default function InviteRsvp({
     : attending !== "" && (!allowsPlusOne || attending === "no" || plusOne !== "");
 
   return (
-    <section ref={sectionRef} id="rsvp" className="invite-rsvp">
-      <OrnamentDivider />
-      <h2 className="invite-rsvp-heading">
-        {isCouple ? "Will you both join us?" : "Will you join us?"}
-      </h2>
-      <p className="rsvp-deadline">Kindly reply by {RSVP_DEADLINE_LABEL}</p>
-      {existing && (
-        <p className="rsvp-fine-note">
-          You&apos;ve already replied, thank you. You can change your answer below.
-        </p>
-      )}
-
-      <form action={formAction}>
-        <input type="hidden" name="inviteCode" value={invite.code} />
-
-        {isCouple ? (
-          [
-            { label: guest, field: "attending", value: attending, set: setAttending },
-            { label: partner, field: "partnerAttending", value: partnerAttending, set: setPartnerAttending },
-          ].map((person) => (
-            <fieldset key={person.field} className="couple-person">
-              <legend className="rsvp-label">{person.label}</legend>
-              <div className="plus-one-grid couple-grid">
-                <Choice name={person.field} value="yes" current={person.value} onSelect={person.set} label="Coming" />
-                <Choice name={person.field} value="no" current={person.value} onSelect={person.set} label="Can’t make it" />
-              </div>
-            </fieldset>
-          ))
-        ) : (
-          <div className="plus-one-grid invite-answer-grid">
-            <Choice name="attending" value="yes" current={attending} onSelect={setAttending} label="Yes, I’ll be there" />
-            <Choice
-              name="attending"
-              value="no"
-              current={attending}
-              onSelect={(v) => {
-                setAttending(v);
-                setPlusOne("");
-              }}
-              label="Sadly, I can’t"
-            />
-          </div>
+    <RsvpSection sectionRef={sectionRef}>
+      <div key="form">
+        <OrnamentDivider />
+        <h2 className="invite-rsvp-heading">
+          {isCouple ? "Will you both join us?" : "Will you join us?"}
+        </h2>
+        <p className="rsvp-deadline">Kindly reply by {RSVP_DEADLINE_LABEL}</p>
+        {existing && (
+          <p className="rsvp-fine-note">
+            You&apos;ve already replied, thank you. You can change your answer below.
+          </p>
         )}
 
-        {allowsPlusOne && attending === "yes" && (
-          <div className="invite-plus-one">
-            <p className="rsvp-label">Bringing someone with you?</p>
-            <div className="plus-one-grid couple-grid">
-              <Choice name="plusOne" value="yes" current={plusOne} onSelect={setPlusOne} label="Yes" />
+        <form action={formAction}>
+          <input type="hidden" name="inviteCode" value={invite.code} />
+
+          {isCouple ? (
+            [
+              { label: guest, field: "attending", value: attending, set: setAttending },
+              { label: partner, field: "partnerAttending", value: partnerAttending, set: setPartnerAttending },
+            ].map((person) => (
+              <fieldset key={person.field} className="couple-person">
+                <legend className="rsvp-label" translate="no">
+                  {person.label}
+                </legend>
+                <div className="plus-one-grid couple-grid">
+                  <Choice name={person.field} value="yes" current={person.value} onSelect={person.set} label="Coming" />
+                  <Choice name={person.field} value="no" current={person.value} onSelect={person.set} label="Can’t make it" />
+                </div>
+              </fieldset>
+            ))
+          ) : (
+            <div className="plus-one-grid invite-answer-grid">
+              <Choice name="attending" value="yes" current={attending} onSelect={setAttending} label="Yes, I’ll be there" />
               <Choice
-                name="plusOne"
+                name="attending"
                 value="no"
-                current={plusOne}
+                current={attending}
                 onSelect={(v) => {
-                  setPlusOne(v);
-                  setPlusOneName("");
+                  setAttending(v);
+                  setPlusOne("");
                 }}
-                label="Just me"
+                label="Sadly, I can’t"
               />
             </div>
-            {plusOne === "yes" && (
-              <div className="plus-one-name-field">
-                <label htmlFor="plusOneName" className="rsvp-label">
-                  Their name
-                </label>
-                <input
-                  type="text"
-                  id="plusOneName"
-                  name="plusOneName"
-                  className="rsvp-input"
-                  value={plusOneName}
-                  onChange={(e) => setPlusOneName(e.target.value)}
-                  placeholder="Their full name"
-                  autoCapitalize="words"
+          )}
+
+          {allowsPlusOne && attending === "yes" && (
+            <div className="invite-plus-one">
+              <p className="rsvp-label">Bringing someone with you?</p>
+              <div className="plus-one-grid couple-grid">
+                <Choice name="plusOne" value="yes" current={plusOne} onSelect={setPlusOne} label="Yes" />
+                <Choice
+                  name="plusOne"
+                  value="no"
+                  current={plusOne}
+                  onSelect={(v) => {
+                    setPlusOne(v);
+                    setPlusOneName("");
+                  }}
+                  label="Just me"
                 />
               </div>
-            )}
+              {plusOne === "yes" && (
+                <div className="plus-one-name-field">
+                  <label htmlFor="plusOneName" className="rsvp-label">
+                    Their name
+                  </label>
+                  <input
+                    type="text"
+                    id="plusOneName"
+                    name="plusOneName"
+                    className="rsvp-input"
+                    value={plusOneName}
+                    onChange={(e) => setPlusOneName(e.target.value)}
+                    placeholder="Their full name"
+                    autoCapitalize="words"
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
+          {state.status === "error" && <p className="rsvp-error">{state.message}</p>}
+
+          <div className="invite-send">
+            <SendButton disabled={!ready} />
+          </div>
+        </form>
+
+        {!existing && (
+          <div className="hero-reminder invite-reminder">
+            <p>
+              Need a little time to decide? Add a reminder for the{" "}
+              <a
+                href={rsvpReminderCalendarUrl(inviteLink)}
+                target="_blank"
+                rel="noopener"
+                className="calendar-link"
+              >
+                RSVP to your calendar
+                <CalendarCheckIcon />
+              </a>
+              .
+            </p>
           </div>
         )}
-
-        {state.status === "error" && <p className="rsvp-error">{state.message}</p>}
-
-        <div className="invite-send">
-          <SendButton disabled={!ready} />
-        </div>
-      </form>
-
-      {!existing && (
-        <div className="hero-reminder invite-reminder">
-          <p>
-            Need a little time to decide? Add a reminder for the{" "}
-            <a
-              href={rsvpReminderCalendarUrl(inviteLink)}
-              target="_blank"
-              rel="noopener"
-              className="calendar-link"
-            >
-              RSVP to your calendar
-              <CalendarCheckIcon />
-            </a>
-            .
-          </p>
-        </div>
-      )}
-    </section>
+      </div>
+    </RsvpSection>
   );
 }
