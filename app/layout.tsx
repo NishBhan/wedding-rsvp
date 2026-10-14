@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
-import { SITE_URL } from "@/lib/site";
+import { OG_IMAGE, SITE_URL } from "@/lib/site";
 
 // Cormorant Garamond only, per the approved design refresh — no second
 // display face. Weights/styles cover everything the design uses: light
@@ -24,20 +24,13 @@ export const metadata: Metadata = {
     description: "Everything you need for Nishtha & Wouter's wedding - 14-15th November 2027",
     url: siteUrl,
     siteName: "Nishtha & Wouter",
-    images: [
-      {
-        url: `${siteUrl}/og-image.png`,
-        width: 1200,
-        height: 630,
-        alt: "Nishtha & Wouter monogram",
-      },
-    ],
+    images: [OG_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
     title: "FishfoundherWater | Wedding",
     description: "Everything you need for Nishtha & Wouter's wedding - 14-15th November 2027",
-    images: [`${siteUrl}/og-image.png`],
+    images: [OG_IMAGE.url],
   },
 };
 

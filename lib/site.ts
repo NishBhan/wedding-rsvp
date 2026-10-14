@@ -4,6 +4,14 @@
 export const SITE_URL = "https://www.fishfoundherwater.com/";
 export const RSVP_URL = "https://www.fishfoundherwater.com/rsvp";
 
+// The link-preview image (WhatsApp, iMessage), shared by every page.
+export const OG_IMAGE = {
+  url: "https://www.fishfoundherwater.com/og-image.png",
+  width: 1200,
+  height: 630,
+  alt: "Nishtha & Wouter monogram",
+};
+
 // Longest name a guest can type (their own on the shared page, or a
 // plus-one's). Enforced in the inputs and again in the submit action.
 export const MAX_NAME_LENGTH = 80;

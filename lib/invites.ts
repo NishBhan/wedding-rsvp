@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { SITE_URL } from "@/lib/site";
 
@@ -99,3 +100,8 @@ export async function getInviteByCode(
       : null,
   };
 }
+
+// The same lookup, shared within one page request: the invite page's link
+// preview tags and its body both need the invite, and this keeps that to a
+// single database round trip. (Server actions use getInviteByCode directly.)
+export const getInviteForPage = cache(getInviteByCode);
