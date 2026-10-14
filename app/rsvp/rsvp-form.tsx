@@ -93,7 +93,6 @@ export default function RsvpForm() {
   const [plusOneName, setPlusOneName] = useState("");
 
   // "You're already on the list" detection while typing on the name step.
-  const [existingId, setExistingId] = useState<string | null>(null);
   const [match, setMatch] = useState<ExistingMatch | null>(null);
   const [matchDismissed, setMatchDismissed] = useState(false);
   const [plusOneResolution, setPlusOneResolution] = useState<
@@ -127,7 +126,6 @@ export default function RsvpForm() {
 
   const updateMyAnswer = () => {
     if (!match || match.kind !== "primary") return;
-    setExistingId(match.id);
     setAttending(match.attending ? "yes" : "no");
     setPlusOne(match.plusOne ? "yes" : "no");
     setPlusOneName(match.plusOneName || "");
@@ -278,7 +276,6 @@ export default function RsvpForm() {
       {(step === "plus" || step === "decline") && (
         <input type="hidden" name="attending" value={attending} />
       )}
-      {existingId && <input type="hidden" name="existingId" value={existingId} />}
 
       <div className="motif-row">
         {step === "name" && <TulipMotif />}
@@ -307,7 +304,6 @@ export default function RsvpForm() {
               onChange={(e) => {
                 setName(e.target.value);
                 setMatchDismissed(false);
-                setExistingId(null);
               }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
