@@ -136,10 +136,12 @@ export default function InviteRsvp({
           <h2 className="invite-rsvp-heading">Replies have now closed</h2>
           {state.closed && <p className="rsvp-error">{state.message}</p>}
           <p>{summary ?? "We didn’t receive a reply from you before replies closed."}</p>
-          <p className="rsvp-fine-note">
-            If anything has changed, please message Nishtha or Wouter directly and
-            we&rsquo;ll sort it out together.
-          </p>
+          {!state.closed && (
+            <p className="rsvp-fine-note">
+              If anything has changed, please message Nishtha or Wouter directly and
+              we&rsquo;ll sort it out together.
+            </p>
+          )}
         </div>
       </RsvpSection>
     );
