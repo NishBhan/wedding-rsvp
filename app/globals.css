@@ -1292,3 +1292,18 @@ h2,
 p {
   text-wrap: pretty;
 }
+
+/* "to the wedding of" above the couple's names, as "Wedding of" sits on the
+   save-the-date. */
+.hero-wedding-of {
+  margin: clamp(18px, 2.6vw, 28px) 0 0;
+  font-family: var(--font-heading), Georgia, serif;
+  font-style: italic;
+  font-size: clamp(20px, 4.4vw, 26px);
+  color: var(--ink);
+  animation: nwHeroIn 0.6s ease both 0.08s;
+}
+
+.hero-wedding-of + .hero-names {
+  margin-top: 4px;
+}

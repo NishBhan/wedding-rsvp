@@ -19,6 +19,7 @@ export default function SaveTheDate() {
           <AnimatedMonogram />
         </div>
 
+        <p className="hero-wedding-of">for the wedding of</p>
         <h1 className="hero-names">
           Nishtha <span className="amp">&amp;</span> Wouter
         </h1>
