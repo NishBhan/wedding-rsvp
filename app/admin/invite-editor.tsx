@@ -205,10 +205,12 @@ function InviteEditor({ initial, onClose }: { initial: Initial; onClose: () => v
 // A button that opens the editor in a dialog (Esc closes it).
 function EditorDialog({
   label,
+  ariaLabel,
   className,
   initial,
 }: {
-  label: string;
+  label: React.ReactNode;
+  ariaLabel?: string;
   className: string;
   initial: Initial;
 }) {
@@ -226,7 +228,7 @@ function EditorDialog({
 
   return (
     <>
-      <button type="button" className={className} onClick={() => setOpen(true)}>
+      <button type="button" className={className} aria-label={ariaLabel} onClick={() => setOpen(true)}>
         {label}
       </button>
       {open && (
@@ -251,5 +253,20 @@ export function AddInviteButton({ defaultTier }: { defaultTier?: number | null }
 }
 
 export function EditInviteButton({ initial }: { initial: Initial & { id: string } }) {
-  return <EditorDialog label="Edit" className="admin-small-button sender-option" initial={initial} />;
+  // A pencil on phones, so the button fits beside the name.
+  return (
+    <EditorDialog
+      label={
+        <>
+          <span className="label-long">Edit</span>
+          <span className="label-short" aria-hidden="true">
+            ✎
+          </span>
+        </>
+      }
+      ariaLabel="Edit"
+      className="admin-small-button sender-option"
+      initial={initial}
+    />
+  );
 }

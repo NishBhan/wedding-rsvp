@@ -1724,3 +1724,24 @@ tr.invite-sent td {
 .invites-table .invite-type {
   white-space: nowrap;
 }
+
+@media (max-width: 600px) {
+  .invites-table .tier-select {
+    padding: 4px 2px;
+  }
+
+  .invites-table .admin-small-button {
+    padding: 8px 10px;
+  }
+}
+
+@media (max-width: 600px) {
+  .admin-wrap {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .invites-table .invite-names {
+    min-width: 84px;
+  }
+}
