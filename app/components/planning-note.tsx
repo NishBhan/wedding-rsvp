@@ -3,7 +3,7 @@ import OrnamentDivider from "./ornament-divider";
 /* "A little note for your planning", shared by the homepage and every
    invitation so the timings can only ever be stated once. The official
    celebrations are 14 and 15 November; the 16th is for travelling home. */
-export default function PlanningNote() {
+export default function PlanningNote({ declined = false }: { declined?: boolean }) {
   return (
     <section className="planning-note">
       <div className="planning-note-inner">
@@ -19,7 +19,10 @@ export default function PlanningNote() {
           travel home on 16 November, in the morning or early afternoon, whichever
           suits you.
         </p>
-        <p>
+        {/* Not shown to guests whose reply is a no. "declined" covers a saved
+            reply; a reply sent on the page toggles it via data-declined on
+            <html> (see invite-rsvp.tsx). */}
+        <p className={declined ? "stay-note stay-hidden" : "stay-note"}>
           We&rsquo;re arranging where everyone stays on the nights of 14 and 15 November
           and will share the details closer to the time, so please don&rsquo;t book
           anything for those two nights.

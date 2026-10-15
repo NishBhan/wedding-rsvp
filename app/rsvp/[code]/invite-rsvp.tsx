@@ -128,6 +128,16 @@ export default function InviteRsvp({
   const guest = invite.guestName;
   const partner = invite.partnerName ?? "";
 
+  // After a reply is sent, show or hide the planning note's "don't book
+  // anywhere to stay" paragraph to match it (it's only for guests coming).
+  useEffect(() => {
+    if (state.status !== "success") return;
+    const coming = state.saved
+      ? state.saved.attending || state.saved.partnerAttending === true
+      : attending === "yes" || (isCouple && partnerAttending === "yes");
+    document.documentElement.dataset.declined = coming ? "false" : "true";
+  }, [state]);
+
   useEffect(() => {
     if (state.status === "success" || state.closed) {
       sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -184,7 +194,7 @@ export default function InviteRsvp({
       const who = isCouple ? `${guest} & ${partner}` : guest;
       heading = `We’ll miss you, ${who}.`;
       body =
-        "Thank you for telling us, and for telling us early. You’ll be in our hearts on the day, and we’ll raise a glass to you in Bengaluru.";
+        "Your reply is saved. Thank you for telling us, and for telling us early. You’ll be in our hearts on the day, and we’ll raise a glass to you in Bengaluru.";
     }
 
     return (

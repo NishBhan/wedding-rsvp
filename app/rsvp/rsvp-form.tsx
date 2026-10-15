@@ -148,7 +148,7 @@ export default function RsvpForm({ closed = false }: { closed?: boolean }) {
         <p>
           {isAttending
             ? `Thank you, ${firstName || "friend"}. Your place is saved.`
-            : "Thank you for letting us know, and for telling us early. We completely understand."}
+            : "Your reply is saved. Thank you for letting us know, and for telling us early. We completely understand."}
         </p>
 
         {hasPlusOne && (

@@ -1321,3 +1321,13 @@ p {
 .rsvp-hint-centred {
   text-align: center;
 }
+
+/* The planning note's stay paragraph is only for guests who are coming. */
+.stay-hidden,
+html[data-declined="true"] .stay-note {
+  display: none;
+}
+
+html[data-declined="false"] .stay-note {
+  display: block;
+}
