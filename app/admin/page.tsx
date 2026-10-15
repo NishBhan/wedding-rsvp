@@ -3,6 +3,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { login, logout } from "./actions";
 import { isAdminAuthed } from "@/lib/admin-auth";
 import { inviteTypeOf, inviteUrl, InviteType } from "@/lib/invites";
+import { DEFAULT_MESSAGE_TEMPLATE, MESSAGE_TEMPLATE_KEY, fillMessage } from "@/lib/invite-message";
+import { CopyMessageButton, SentCheckbox, TemplateEditor } from "./invite-tools";
 
 type Rsvp = {
   id: string;
@@ -22,6 +24,7 @@ type InviteRow = {
   guest_name: string;
   partner_name: string | null;
   plus_one_allowed: boolean;
+  sent_at?: string | null;
 };
 
 const INVITE_TYPE_LABEL: Record<InviteType, string> = {
@@ -63,13 +66,28 @@ export default async function AdminPage({
     .select("*")
     .order("submitted_at", { ascending: false });
 
-  const { data: inviteData, error: inviteError } = await supabase
-    .from("invites")
-    .select("id, code, guest_name, partner_name, plus_one_allowed")
-    .order("guest_name", { ascending: true });
+  // sent_at and admin_settings only exist once the latest schema.sql has
+  // been run. Until then the page still works, just without sent tracking.
+  const INVITE_COLUMNS = "id, code, guest_name, partner_name, plus_one_allowed";
+  const loadInvites = (columns: string) =>
+    supabase.from("invites").select(columns).order("guest_name", { ascending: true });
+  let sentTracking = true;
+  let invitesResult = await loadInvites(`${INVITE_COLUMNS}, sent_at`);
+  if (invitesResult.error) {
+    sentTracking = false;
+    invitesResult = await loadInvites(INVITE_COLUMNS);
+  }
+  const { data: inviteData, error: inviteError } = invitesResult;
+
+  const { data: templateRow, error: templateError } = await supabase
+    .from("admin_settings")
+    .select("value")
+    .eq("key", MESSAGE_TEMPLATE_KEY)
+    .maybeSingle();
+  const template = (templateRow?.value as string | undefined) ?? DEFAULT_MESSAGE_TEMPLATE;
 
   const rsvps = (data as Rsvp[]) ?? [];
-  const invites = (inviteData as InviteRow[]) ?? [];
+  const invites = (inviteData as unknown as InviteRow[] | null) ?? [];
   const rsvpByInvite = new Map(rsvps.filter((r) => r.invite_id).map((r) => [r.invite_id, r]));
   // Show names as they are now on the invite, not the copy saved with the
   // reply, so a name corrected in the invites table shows up everywhere.
@@ -113,6 +131,9 @@ export default async function AdminPage({
     0
   );
   const awaitingCount = invites.filter((i) => !rsvpByInvite.has(i.id)).length;
+  const sentCount = invites.filter((i) => i.sent_at).length;
+  const inviteNames = (i: InviteRow) =>
+    i.partner_name ? `${i.guest_name} & ${i.partner_name}` : i.guest_name;
 
   return (
     <div className="admin-wrap">
@@ -145,6 +166,14 @@ export default async function AdminPage({
           <span className="number">{awaitingCount}</span>
           <span className="label">Invites awaiting reply</span>
         </div>
+        {sentTracking && (
+          <div className="stat">
+            <span className="number">
+              {sentCount}/{invites.length}
+            </span>
+            <span className="label">Invites sent</span>
+          </div>
+        )}
       </div>
 
       <a className="export-link" href="/admin/export">
@@ -203,12 +232,23 @@ export default async function AdminPage({
         <code>partner_name</code> for a couple, set <code>plus_one_allowed</code> to true for a single
         guest who may bring someone, or leave both empty for a single guest.
       </p>
+      {(!sentTracking || templateError) && (
+        <p className="error" style={{ marginBottom: 16 }}>
+          To save the message and tick off sent invites, run the latest{" "}
+          <code>supabase/schema.sql</code> in the Supabase SQL Editor, then refresh this page.
+        </p>
+      )}
+
+      <TemplateEditor template={template} enabled={!templateError} />
+
       <div className="table-scroll">
         <table>
           <thead>
             <tr>
+              <th>Sent</th>
               <th>Invited</th>
               <th>Type</th>
+              <th>Message</th>
               <th>Personal link</th>
               <th>Replied</th>
             </tr>
@@ -216,10 +256,21 @@ export default async function AdminPage({
           <tbody>
             {invites.map((i) => {
               const url = inviteUrl(i.code);
+              const names = inviteNames(i);
               return (
-                <tr key={i.id}>
-                  <td>{i.partner_name ? `${i.guest_name} & ${i.partner_name}` : i.guest_name}</td>
+                <tr key={i.id} className={i.sent_at ? "invite-sent" : undefined}>
+                  <td>
+                    {sentTracking ? (
+                      <SentCheckbox inviteId={i.id} sent={Boolean(i.sent_at)} label={names} />
+                    ) : (
+                      "-"
+                    )}
+                  </td>
+                  <td>{names}</td>
                   <td>{INVITE_TYPE_LABEL[inviteTypeOf(i)]}</td>
+                  <td>
+                    <CopyMessageButton message={fillMessage(template, { name: names, link: url })} />
+                  </td>
                   <td>
                     <a href={url}>{url}</a>
                   </td>
