@@ -195,7 +195,8 @@ export function TemplateEditor({
       <label htmlFor="template">Invite message</label>
       <p className="admin-help">
         Each row&rsquo;s &ldquo;Copy message&rdquo; button fills in: <code>{"{you}"}</code>{" "}
-        (&ldquo;you&rdquo;, or &ldquo;you &amp; Joost&rdquo; for a couple),{" "}
+        (&ldquo;you&rdquo;, or &ldquo;you &amp; Joost&rdquo; for a couple, partner&rsquo;s first
+        name only),{" "}
         <code>{"{name}"}</code> (&ldquo;Priya&rdquo; or &ldquo;Priya &amp; Joost&rdquo;),{" "}
         <code>{"{other}"}</code> (Wout when Nish is sending, and the other way round),{" "}
         <code>{"{me}"}</code> (whoever is sending), <code>{"{link}"}</code> (their personal

@@ -35,7 +35,9 @@ export function fillMessage(
   values: { guestName: string; partnerName: string | null; link: string; sender: Sender | null }
 ) {
   const both = values.partnerName ? `${values.guestName} & ${values.partnerName}` : values.guestName;
-  const you = values.partnerName ? `you & ${values.partnerName}` : "you";
+  // First name only: "you & Hannah", not "you & Hannah Riordan".
+  const partnerFirst = values.partnerName?.trim().split(/\s+/)[0];
+  const you = partnerFirst ? `you & ${partnerFirst}` : "you";
   const other = values.sender ? SENDERS.find((s) => s !== values.sender)! : "";
   return template
     .replace(/\{name\}/g, both)
