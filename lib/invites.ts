@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { SITE_URL } from "@/lib/site";
 
@@ -42,6 +43,10 @@ function normalizeCode(raw: string) {
   return raw.trim().toLowerCase();
 }
 
+// Thrown when the database can't be reached, so callers can tell "this
+// link doesn't exist" (null) apart from "try again in a moment".
+export class InviteLookupError extends Error {}
+
 export async function getInviteByCode(
   rawCode: string
 ): Promise<{ invite: Invite; existing: InviteRsvp | null } | null> {
@@ -57,7 +62,7 @@ export async function getInviteByCode(
 
   if (error) {
     console.error("getInviteByCode failed:", error.message);
-    return null;
+    throw new InviteLookupError(error.message);
   }
   if (!data) return null;
 
@@ -76,7 +81,12 @@ export async function getInviteByCode(
     .eq("invite_id", row.id)
     .maybeSingle();
 
-  if (rsvpError) console.error("getInviteByCode rsvp lookup failed:", rsvpError.message);
+  // Without the existing reply the page would show a blank form and a
+  // couple's send would overwrite both answers, so treat this as an outage.
+  if (rsvpError) {
+    console.error("getInviteByCode rsvp lookup failed:", rsvpError.message);
+    throw new InviteLookupError(rsvpError.message);
+  }
 
   return {
     invite,
@@ -90,3 +100,8 @@ export async function getInviteByCode(
       : null,
   };
 }
+
+// The same lookup, shared within one page request: the invite page's link
+// preview tags and its body both need the invite, and this keeps that to a
+// single database round trip. (Server actions use getInviteByCode directly.)
+export const getInviteForPage = cache(getInviteByCode);

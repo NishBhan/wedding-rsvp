@@ -2,17 +2,32 @@
 
 import { createServerClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getInviteByCode } from "@/lib/invites";
+import { getInviteByCode, InviteLookupError } from "@/lib/invites";
+import { rsvpsAreOpen, RSVPS_CLOSED_MID_FORM_MESSAGE } from "@/lib/rsvp-window";
+import { MAX_NAME_LENGTH } from "@/lib/site";
+
+const TOO_LONG_MESSAGE = `Names can be up to ${MAX_NAME_LENGTH} characters, so please shorten it slightly.`;
 
 export type RsvpState = {
   status: "idle" | "success" | "error";
   message?: string;
+  // Set when the reply arrived after the deadline and was not saved.
+  closed?: boolean;
+  // Couple invites: both answers as saved, which can include a change the
+  // partner made from another phone a moment earlier.
+  saved?: { attending: boolean; partnerAttending: boolean | null };
 };
 
 export async function submitRsvp(
   _prevState: RsvpState,
   formData: FormData
 ): Promise<RsvpState> {
+  // The lock: nothing is written after the deadline, whichever page the
+  // reply came from or however long the form was left open.
+  if (!rsvpsAreOpen()) {
+    return { status: "error", closed: true, message: RSVPS_CLOSED_MID_FORM_MESSAGE };
+  }
+
   const name = String(formData.get("name") || "").trim();
   const attending = formData.get("attending") === "yes";
   const plusOne = formData.get("plusOne") === "yes";
@@ -25,10 +40,14 @@ export async function submitRsvp(
     return { status: "error", message: "Please enter your name so we know who is replying." };
   }
 
+  if (name.length > MAX_NAME_LENGTH || plusOneName.length > MAX_NAME_LENGTH) {
+    return { status: "error", message: TOO_LONG_MESSAGE };
+  }
+
   if (attending && plusOne && !plusOneName) {
     return {
       status: "error",
-      message: "We just need a name for them — you can change it later.",
+      message: "Please add their name. You can change it later.",
     };
   }
 
@@ -48,7 +67,7 @@ export async function submitRsvp(
     console.error("RSVP save failed:", error.message);
     return {
       status: "error",
-      message: "Something went wrong on our end. Please try again.",
+      message: "Sorry, something went wrong. Please try again in a moment.",
     };
   }
 
@@ -60,7 +79,13 @@ export async function submitRsvp(
    form in devtools can't rename a guest or add a plus-one to a solo invite.
    One row per invite: a second submission overwrites the first. */
 async function submitInviteRsvp(code: string, formData: FormData): Promise<RsvpState> {
-  const found = await getInviteByCode(code);
+  let found;
+  try {
+    found = await getInviteByCode(code);
+  } catch (e) {
+    if (!(e instanceof InviteLookupError)) throw e;
+    return { status: "error", message: "Sorry, something went wrong. Please try again in a moment." };
+  }
   if (!found) {
     return {
       status: "error",
@@ -77,8 +102,12 @@ async function submitInviteRsvp(code: string, formData: FormData): Promise<RsvpS
   if (plusOne && !plusOneName) {
     return {
       status: "error",
-      message: "We just need a name for them — you can change it later.",
+      message: "Please add their name. You can change it later.",
     };
+  }
+
+  if (plusOneName.length > MAX_NAME_LENGTH) {
+    return { status: "error", message: TOO_LONG_MESSAGE };
   }
 
   const isCouple = invite.type === "couple";
@@ -93,17 +122,54 @@ async function submitInviteRsvp(code: string, formData: FormData): Promise<RsvpS
     submitted_at: new Date().toISOString(),
   };
 
-  const { error } = await createAdminClient()
-    .from("rsvps")
-    .upsert(record, { onConflict: "invite_id" });
+  const supabase = createAdminClient();
+
+  // Couples often reply from two phones. When a reply already exists, write
+  // only the answers this person actually changed, so partners editing at
+  // the same time don't overwrite each other with a stale copy of the
+  // other's answer. ("changed" is absent only from pages loaded before this
+  // shipped; they fall back to writing both answers.)
+  const { error } =
+    isCouple && found.existing && formData.has("changed")
+      ? await supabase
+          .from("rsvps")
+          .update({
+            name: record.name,
+            partner_name: record.partner_name,
+            submitted_at: record.submitted_at,
+            ...(changedFields(formData).has("attending") ? { attending } : {}),
+            ...(changedFields(formData).has("partnerAttending")
+              ? { partner_attending: partnerAttending }
+              : {}),
+          })
+          .eq("invite_id", invite.id)
+      : await supabase.from("rsvps").upsert(record, { onConflict: "invite_id" });
 
   if (error) {
     console.error("Invite RSVP save failed:", error.message);
     return {
       status: "error",
-      message: "Something went wrong on our end. Please try again.",
+      message: "Sorry, something went wrong. Please try again in a moment.",
     };
   }
 
+  if (isCouple) {
+    const { data } = await supabase
+      .from("rsvps")
+      .select("attending, partner_attending")
+      .eq("invite_id", invite.id)
+      .maybeSingle();
+    if (data) {
+      return {
+        status: "success",
+        saved: { attending: data.attending, partnerAttending: data.partner_attending },
+      };
+    }
+  }
+
   return { status: "success" };
+}
+
+function changedFields(formData: FormData) {
+  return new Set(String(formData.get("changed") || "").split(",").filter(Boolean));
 }

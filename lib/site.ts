@@ -4,21 +4,60 @@
 export const SITE_URL = "https://www.fishfoundherwater.com/";
 export const RSVP_URL = "https://www.fishfoundherwater.com/rsvp";
 
-// The reply-by date, shown on the save-the-date page, the RSVP form and
-// in the calendar reminder. Change all three here.
-export const RSVP_DEADLINE_LABEL = "8th November 2026";
+// The link-preview image (WhatsApp, iMessage), shared by every page.
+export const OG_IMAGE = {
+  url: "https://www.fishfoundherwater.com/og-image.png",
+  width: 1200,
+  height: 630,
+  alt: "Nishtha & Wouter monogram",
+};
 
-// Prefilled Google Calendar link for the "not ready to RSVP yet" reminder
-// on the save-the-date page: an all-day nudge on 7 November 2026, the day
-// before the reply date. Personal-link guests get their own link in the
-// details so the reminder takes them straight back to their invite.
+// Longest name a guest can type (their own on the shared page, or a
+// plus-one's). Enforced in the inputs and again in the submit action.
+export const MAX_NAME_LENGTH = 80;
+
+// Replies close at the end of 15 November 2026, London time. London is on
+// GMT (UTC+0) in November, so that is 23:59:59 UTC. This is the single
+// source for the deadline: the date guests see, the calendar reminder and
+// the lock (lib/rsvp-window.ts) all come from it. Guests only ever see the
+// date, never the exact time.
+export const RSVP_CLOSES_AT = "2026-11-15T23:59:59Z";
+
+// The deadline's calendar date in London, e.g. { day: 15, month: "November", year: 2026 }.
+function londonDate(iso: string) {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/London",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).formatToParts(new Date(iso));
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+  return { day: Number(get("day")), month: get("month"), year: Number(get("year")) };
+}
+
+const deadline = londonDate(RSVP_CLOSES_AT);
+
+// "15 November 2026" (no ordinals, so dates read the same in translation)
+export const RSVP_DEADLINE_LABEL = `${deadline.day} ${deadline.month} ${deadline.year}`;
+
+// The reminder sits on the day before the deadline, as an all-day event.
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const deadlineDay = new Date(Date.UTC(deadline.year, MONTHS.indexOf(deadline.month), deadline.day));
+const ymd = (d: Date) => d.toISOString().slice(0, 10).replace(/-/g, "");
+export const RSVP_REMINDER_START = ymd(new Date(deadlineDay.getTime() - 86400000));
+export const RSVP_REMINDER_END = ymd(deadlineDay);
+export const RSVP_REMINDER_TITLE = `Reply to Nish & Wout's wedding invitation by ${deadline.day} ${deadline.month}`;
+
+// Prefilled Google Calendar link for the "not ready to RSVP yet" reminder.
+// Personal-link guests get their own link in the details so the reminder
+// takes them straight back to their invite.
 export function rsvpReminderCalendarUrl(link: string = SITE_URL) {
   const params = new URLSearchParams({
     action: "TEMPLATE",
-    text: "RSVP due for Nish & Wout's wedding on the 8th.",
-    dates: "20261107/20261108",
+    text: RSVP_REMINDER_TITLE,
+    dates: `${RSVP_REMINDER_START}/${RSVP_REMINDER_END}`,
     location: link,
-    details: `RSVP here: ${link}`,
+    details: `Reply here: ${link}`,
   });
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }

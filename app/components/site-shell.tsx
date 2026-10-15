@@ -1,5 +1,6 @@
 import Link from "next/link";
 import BackgroundFish from "./background-fish";
+import MonogramImg from "./monogram-img";
 
 function FrameCorner({ position }: { position: "tr" | "bl" }) {
   return (
@@ -64,7 +65,7 @@ export default function SiteShell({
 
       <header className="rsvp-header">
         <Link href="/" style={{ display: "flex", alignItems: "center" }}>
-          <img src="/assets/monogram-mark.png" alt="Nishtha & Wouter" className="rsvp-header-logo" />
+          <MonogramImg name="monogram-mark-small" alt="Nishtha & Wouter" className="rsvp-header-logo" />
         </Link>
       </header>
 

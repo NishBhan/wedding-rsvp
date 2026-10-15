@@ -3,7 +3,11 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { isAdminAuthed } from "@/lib/admin-auth";
 import { inviteTypeOf } from "@/lib/invites";
 
-function csvEscape(value: string) {
+function csvEscape(raw: string) {
+  // Guest-typed names starting with = + - @ (or a tab/CR) would run as a
+  // formula when the CSV is opened in Excel or Google Sheets. A leading
+  // apostrophe makes the spreadsheet treat them as plain text.
+  const value = /^[=+\-@\t\r]/.test(raw) ? `'${raw}` : raw;
   if (value.includes(",") || value.includes('"') || value.includes("\n")) {
     return `"${value.replace(/"/g, '""')}"`;
   }
@@ -23,7 +27,7 @@ export async function GET() {
 
   const { data: invites } = await supabase
     .from("invites")
-    .select("id, partner_name, plus_one_allowed");
+    .select("id, guest_name, partner_name, plus_one_allowed");
   const inviteById = new Map((invites ?? []).map((i) => [i.id, i]));
 
   if (error) {
@@ -43,12 +47,13 @@ export async function GET() {
 
   const rows = (data ?? []).map((r) => {
     const invite = r.invite_id ? inviteById.get(r.invite_id) : undefined;
+    // Names as they are now on the invite (see app/admin/page.tsx).
     return [
-      r.name,
+      invite?.guest_name || r.name,
       r.attending ? "Yes" : "No",
       r.plus_one ? "Yes" : "No",
       r.plus_one_name ?? "",
-      r.partner_name ?? "",
+      invite?.partner_name || r.partner_name || "",
       r.partner_attending === null || r.partner_attending === undefined
         ? ""
         : r.partner_attending

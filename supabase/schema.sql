@@ -65,3 +65,23 @@ begin
     alter table rsvps add constraint rsvps_invite_id_key unique (invite_id);
   end if;
 end $$;
+
+-- ---------------------------------------------------------------------
+-- Tighten the public insert rule (replaces the open policy created above,
+-- now that the invite columns exist). The public key can only add a plain
+-- shared-link reply: it cannot attach a reply to someone's invite, set a
+-- partner's answer, or store names longer than the site allows. Personal
+-- link replies are written by the server with the service role, which
+-- this policy doesn't affect.
+-- ---------------------------------------------------------------------
+drop policy if exists "anyone can insert an rsvp" on rsvps;
+create policy "anyone can insert an rsvp"
+  on rsvps for insert
+  to anon
+  with check (
+    invite_id is null
+    and partner_name is null
+    and partner_attending is null
+    and char_length(name) between 1 and 80
+    and (plus_one_name is null or char_length(plus_one_name) <= 80)
+  );

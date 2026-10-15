@@ -3,6 +3,8 @@
   --ink-dark: #12294d;
   --cream: #fbf8f1;
   --gold: #b08d4f;
+  /* Gold dark enough for small text on the cream background (4.7:1). */
+  --gold-text: #836329;
   --line: #c9c0aa;
   --error: #a3352c;
 }
@@ -34,9 +36,13 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  /* Entrances finish instantly, and looping motion (the swimming fish)
+     plays a single instant cycle and stops, instead of re-running every
+     millisecond and flickering. */
   * {
     animation-duration: 0.001s !important;
     animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
     transition: none !important;
   }
 }
@@ -65,18 +71,32 @@ body {
 /* The restrained double-line stationery frame: a Delft hairline outside,
    a fine antique-gold rule inset just inside it. Corner botanical sprigs
    only appear at desktop widths, where there's room for them. */
+/* The page border: a band of Delft tiles (a blue four-petal flower between
+   gold rules), as on the save-the-date, with a fine gold rule inside it.
+   Two tiny inline SVG tiles repeated along each edge; no image downloads. */
 .stationery-frame {
+  --tile: 14px;
   position: fixed;
-  inset: clamp(9px, 1.5vw, 26px);
+  inset: 0;
   z-index: 40;
   pointer-events: none;
-  border: 1px solid rgba(27, 58, 107, 0.24);
+  background:
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2014%2014%22%3E%3Crect%20width%3D%2214%22%20height%3D%2214%22%20fill%3D%22%23f8f2e6%22%2F%3E%3Cpath%20d%3D%22M0%20.5H14M0%2013.5H14%22%20stroke%3D%22%23B08D4F%22%20stroke-width%3D%221%22%2F%3E%3Cellipse%20cx%3D%227%22%20cy%3D%224.4%22%20rx%3D%221.4%22%20ry%3D%222.2%22%20transform%3D%22rotate%280%207%207%29%22%20fill%3D%22%231B3A6B%22%2F%3E%3Cellipse%20cx%3D%227%22%20cy%3D%224.4%22%20rx%3D%221.4%22%20ry%3D%222.2%22%20transform%3D%22rotate%2890%207%207%29%22%20fill%3D%22%231B3A6B%22%2F%3E%3Cellipse%20cx%3D%227%22%20cy%3D%224.4%22%20rx%3D%221.4%22%20ry%3D%222.2%22%20transform%3D%22rotate%28180%207%207%29%22%20fill%3D%22%231B3A6B%22%2F%3E%3Cellipse%20cx%3D%227%22%20cy%3D%224.4%22%20rx%3D%221.4%22%20ry%3D%222.2%22%20transform%3D%22rotate%28270%207%207%29%22%20fill%3D%22%231B3A6B%22%2F%3E%3Ccircle%20cx%3D%227%22%20cy%3D%227%22%20r%3D%221.1%22%20fill%3D%22%23B08D4F%22%2F%3E%3C%2Fsvg%3E") top left / var(--tile) var(--tile) repeat-x,
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2014%2014%22%3E%3Crect%20width%3D%2214%22%20height%3D%2214%22%20fill%3D%22%23f8f2e6%22%2F%3E%3Cpath%20d%3D%22M0%20.5H14M0%2013.5H14%22%20stroke%3D%22%23B08D4F%22%20stroke-width%3D%221%22%2F%3E%3Cellipse%20cx%3D%227%22%20cy%3D%224.4%22%20rx%3D%221.4%22%20ry%3D%222.2%22%20transform%3D%22rotate%280%207%207%29%22%20fill%3D%22%231B3A6B%22%2F%3E%3Cellipse%20cx%3D%227%22%20cy%3D%224.4%22%20rx%3D%221.4%22%20ry%3D%222.2%22%20transform%3D%22rotate%2890%207%207%29%22%20fill%3D%22%231B3A6B%22%2F%3E%3Cellipse%20cx%3D%227%22%20cy%3D%224.4%22%20rx%3D%221.4%22%20ry%3D%222.2%22%20transform%3D%22rotate%28180%207%207%29%22%20fill%3D%22%231B3A6B%22%2F%3E%3Cellipse%20cx%3D%227%22%20cy%3D%224.4%22%20rx%3D%221.4%22%20ry%3D%222.2%22%20transform%3D%22rotate%28270%207%207%29%22%20fill%3D%22%231B3A6B%22%2F%3E%3Ccircle%20cx%3D%227%22%20cy%3D%227%22%20r%3D%221.1%22%20fill%3D%22%23B08D4F%22%2F%3E%3C%2Fsvg%3E") bottom left / var(--tile) var(--tile) repeat-x,
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2014%2014%22%3E%3Crect%20width%3D%2214%22%20height%3D%2214%22%20fill%3D%22%23f8f2e6%22%2F%3E%3Cpath%20d%3D%22M.5%200V14M13.5%200V14%22%20stroke%3D%22%23B08D4F%22%20stroke-width%3D%221%22%2F%3E%3Cellipse%20cx%3D%227%22%20cy%3D%224.4%22%20rx%3D%221.4%22%20ry%3D%222.2%22%20transform%3D%22rotate%280%207%207%29%22%20fill%3D%22%231B3A6B%22%2F%3E%3Cellipse%20cx%3D%227%22%20cy%3D%224.4%22%20rx%3D%221.4%22%20ry%3D%222.2%22%20transform%3D%22rotate%2890%207%207%29%22%20fill%3D%22%231B3A6B%22%2F%3E%3Cellipse%20cx%3D%227%22%20cy%3D%224.4%22%20rx%3D%221.4%22%20ry%3D%222.2%22%20transform%3D%22rotate%28180%207%207%29%22%20fill%3D%22%231B3A6B%22%2F%3E%3Cellipse%20cx%3D%227%22%20cy%3D%224.4%22%20rx%3D%221.4%22%20ry%3D%222.2%22%20transform%3D%22rotate%28270%207%207%29%22%20fill%3D%22%231B3A6B%22%2F%3E%3Ccircle%20cx%3D%227%22%20cy%3D%227%22%20r%3D%221.1%22%20fill%3D%22%23B08D4F%22%2F%3E%3C%2Fsvg%3E") top left / var(--tile) var(--tile) repeat-y,
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2014%2014%22%3E%3Crect%20width%3D%2214%22%20height%3D%2214%22%20fill%3D%22%23f8f2e6%22%2F%3E%3Cpath%20d%3D%22M.5%200V14M13.5%200V14%22%20stroke%3D%22%23B08D4F%22%20stroke-width%3D%221%22%2F%3E%3Cellipse%20cx%3D%227%22%20cy%3D%224.4%22%20rx%3D%221.4%22%20ry%3D%222.2%22%20transform%3D%22rotate%280%207%207%29%22%20fill%3D%22%231B3A6B%22%2F%3E%3Cellipse%20cx%3D%227%22%20cy%3D%224.4%22%20rx%3D%221.4%22%20ry%3D%222.2%22%20transform%3D%22rotate%2890%207%207%29%22%20fill%3D%22%231B3A6B%22%2F%3E%3Cellipse%20cx%3D%227%22%20cy%3D%224.4%22%20rx%3D%221.4%22%20ry%3D%222.2%22%20transform%3D%22rotate%28180%207%207%29%22%20fill%3D%22%231B3A6B%22%2F%3E%3Cellipse%20cx%3D%227%22%20cy%3D%224.4%22%20rx%3D%221.4%22%20ry%3D%222.2%22%20transform%3D%22rotate%28270%207%207%29%22%20fill%3D%22%231B3A6B%22%2F%3E%3Ccircle%20cx%3D%227%22%20cy%3D%227%22%20r%3D%221.1%22%20fill%3D%22%23B08D4F%22%2F%3E%3C%2Fsvg%3E") top right / var(--tile) var(--tile) repeat-y;
+}
+
+@media (min-width: 768px) {
+  .stationery-frame {
+    --tile: 18px;
+  }
 }
 
 .stationery-frame::before {
   content: "";
   position: absolute;
-  inset: clamp(4px, 0.45vw, 7px);
+  inset: calc(var(--tile) + 4px);
   border: 1px solid rgba(176, 141, 79, 0.38);
 }
 
@@ -93,14 +113,14 @@ body {
 }
 
 .frame-corner-tr {
-  top: 15px;
-  right: 15px;
+  top: calc(var(--tile) + 10px);
+  right: calc(var(--tile) + 10px);
   transform: rotate(90deg);
 }
 
 .frame-corner-bl {
-  bottom: 15px;
-  left: 15px;
+  bottom: calc(var(--tile) + 10px);
+  left: calc(var(--tile) + 10px);
   transform: rotate(270deg);
 }
 
@@ -199,11 +219,11 @@ body {
   margin: clamp(10px, 2vw, 18px) auto 0;
   display: flex;
   justify-content: center;
-  animation: nwHeroIn 0.8s ease both 0.14s;
+  animation: nwHeroIn 0.6s ease both 0.04s;
 }
 
 .hero-eyebrow {
-  animation: nwHeroIn 0.7s ease both 0.05s;
+  animation: nwHeroIn 0.5s ease both 0s;
   font-weight: 500;
 }
 
@@ -215,7 +235,7 @@ body {
   letter-spacing: 0.06em;
   color: #12294d;
   line-height: 1.1;
-  animation: nwHeroIn 0.8s ease both 0.4s;
+  animation: nwHeroIn 0.6s ease both 0.1s;
 }
 
 .hero-names .amp {
@@ -232,31 +252,16 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 14px;
 }
 
-.ornament-divider span:not(.diamond) {
-  width: clamp(46px, 9vw, 100px);
-  height: 1px;
-  background: linear-gradient(90deg, rgba(176, 141, 79, 0), var(--gold));
+.ornament-divider svg {
+  display: block;
+  overflow: visible;
 }
 
-.ornament-divider span:last-child {
-  background: linear-gradient(90deg, var(--gold), rgba(176, 141, 79, 0));
-}
 
-.ornament-divider .diamond {
-  width: 7px;
-  height: 7px;
-  border: 1px solid var(--gold);
-  transform: rotate(45deg);
-  background: none;
-  flex-shrink: 0;
-}
 
-.ornament-divider.hero-size span:not(.diamond) {
-  width: clamp(40px, 10vw, 90px);
-}
+
 
 .hero-dates {
   margin: clamp(14px, 2.6vw, 26px) 0 0;
@@ -267,7 +272,7 @@ body {
   padding-bottom: 6px;
   letter-spacing: 0.01em;
   color: var(--ink);
-  animation: nwHeroIn 0.85s cubic-bezier(0.2, 0.7, 0.2, 1) both 0.64s;
+  animation: nwHeroIn 0.85s cubic-bezier(0.2, 0.7, 0.2, 1) both 0.16s;
 }
 
 .hero-dates .dash {
@@ -282,7 +287,7 @@ body {
   font-size: clamp(20px, 5.4vw, 44px);
   letter-spacing: 0.2em;
   color: var(--ink);
-  animation: nwHeroIn 0.85s cubic-bezier(0.2, 0.7, 0.2, 1) both 0.74s;
+  animation: nwHeroIn 0.85s cubic-bezier(0.2, 0.7, 0.2, 1) both 0.2s;
 }
 
 .hero-location {
@@ -292,7 +297,7 @@ body {
   letter-spacing: 0.3em;
   color: var(--ink);
   font-weight: 500;
-  animation: nwHeroIn 0.7s ease both 1.04s;
+  animation: nwHeroIn 0.5s ease both 0.26s;
 }
 
 .hero-cta {
@@ -301,7 +306,7 @@ body {
   flex-wrap: wrap;
   gap: 14px;
   justify-content: center;
-  animation: nwHeroIn 0.7s ease both 1.24s;
+  animation: nwHeroIn 0.5s ease both 0.3s;
 }
 
 .hero-btn {
@@ -319,7 +324,7 @@ body {
   font-size: 19px;
   line-height: 1.7;
   color: #3a4d6b;
-  animation: nwHeroIn 0.7s ease both 1.16s;
+  animation: nwHeroIn 0.5s ease both 0.3s;
 }
 
 .hero-reminder {
@@ -327,7 +332,7 @@ body {
   max-width: 560px;
   border-top: 1px solid rgba(27, 58, 107, 0.14);
   padding-top: 26px;
-  animation: nwHeroIn 0.7s ease both 1.32s;
+  animation: nwHeroIn 0.5s ease both 0.34s;
 }
 
 .hero-reminder p {
@@ -706,7 +711,7 @@ input[type="text"].rsvp-input:focus {
   font-style: italic;
   font-size: 17px;
   line-height: 1.5;
-  color: #8a7a5f;
+  color: #6b5c44;
 }
 
 .link-back {
@@ -899,6 +904,16 @@ button:disabled {
   margin: 30px 0 0;
 }
 
+/* Fine-print notes inside a confirmation keep their own size, colour and
+   centring; the rule above would otherwise pin the narrow note to the
+   left edge. */
+.confirmation .rsvp-fine-note {
+  margin: 24px auto 0;
+  font-size: 17px;
+  line-height: 1.5;
+  color: #6b5c44;
+}
+
 .confirmation .ornament-divider {
   margin: 0 auto 34px;
 }
@@ -923,6 +938,7 @@ button:disabled {
   margin-top: 8px;
   font-size: 21px;
   color: #12294d;
+  overflow-wrap: anywhere;
 }
 
 .details-panel {
@@ -1100,30 +1116,6 @@ th {
   margin-bottom: 26px;
 }
 
-/* Personal invite links: "Dear Anjali & Rohan" above "Save the date". */
-.hero-greeting {
-  margin: 0 0 10px;
-  font-family: var(--font-heading), Georgia, serif;
-  font-style: italic;
-  font-size: clamp(24px, 5vw, 32px);
-  line-height: 1.25;
-  color: var(--ink-dark);
-  animation: nwHeroIn 0.7s ease both 0.05s;
-}
-
-.hero-greeting strong {
-  font-style: normal;
-  font-weight: 600;
-  color: #12294d;
-}
-
-/* Personal-link form: the guest's name in the "Hello, ..." line. */
-.eyebrow-names {
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--ink-dark);
-}
-
 .rsvp-deadline {
   text-align: center;
   margin: 6px 0 0;
@@ -1131,5 +1123,211 @@ th {
   font-size: 13px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--gold);
+  color: var(--gold-text);
+}
+
+/* Personal invitation (/rsvp/<code>): a short letter to the guest, then
+   the RSVP on the same page. */
+.invite-letter {
+  margin: clamp(34px, 5vw, 52px) auto 0;
+  max-width: 560px;
+  text-align: left;
+  animation: nwHeroIn 0.5s ease both 0.3s;
+}
+
+.invite-letter p {
+  margin: 0 0 18px;
+  font-size: 19px;
+  line-height: 1.7;
+  color: #3a4d6b;
+}
+
+.invite-letter .invite-salutation {
+  margin-bottom: 22px;
+  font-family: var(--font-heading), Georgia, serif;
+  font-style: italic;
+  font-size: clamp(26px, 5.4vw, 34px);
+  line-height: 1.25;
+  color: var(--ink-dark);
+}
+
+.invite-salutation strong {
+  font-style: normal;
+  font-weight: 600;
+  color: #12294d;
+}
+
+.invite-letter .invite-signoff {
+  margin-top: 24px;
+  font-style: italic;
+  color: var(--ink-dark);
+}
+
+.invite-rsvp {
+  margin: clamp(40px, 6vw, 64px) auto 0;
+  max-width: 560px;
+  text-align: center;
+  scroll-margin-top: 80px;
+  animation: nwHeroIn 0.5s ease both 0.34s;
+}
+
+.invite-rsvp-heading {
+  margin: 18px 0 0;
+  font-family: var(--font-heading), Georgia, serif;
+  font-weight: 500;
+  font-size: clamp(30px, 6vw, 42px);
+  line-height: 1.2;
+  color: #12294d;
+}
+
+.invite-answer-grid {
+  margin-top: clamp(24px, 4vw, 32px);
+}
+
+.invite-answer-grid .plus-one-option span {
+  font-size: 20px;
+}
+
+/* Keep paired options the same height when one label wraps. */
+.invite-rsvp .plus-one-option span {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.invite-plus-one {
+  margin-top: 28px;
+  text-align: left;
+  animation: nwRise 0.35s ease both;
+}
+
+.invite-send {
+  margin-top: 26px;
+}
+
+.invite-reminder {
+  animation: none;
+}
+
+.calendar-alt {
+  margin: 10px 0 0;
+  text-align: center;
+  font-size: 16px;
+  color: #3a4d6b;
+}
+
+/* Keyboard focus: the answer radios are visually hidden, so show focus on
+   the visible box next to them, and on buttons and links. */
+.plus-one-option input:focus-visible + span,
+.response-option input:focus-visible + span,
+.btn-primary:focus-visible,
+.response-option-btn:focus-visible,
+.link-back:focus-visible,
+.calendar-link:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+/* Admin tables scroll sideways inside their own box on phones instead of
+   widening the whole page. */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-scroll table {
+  min-width: 640px;
+}
+
+/* Fish leap above a "yes" confirmation: one arc out of the water, then
+   still. Reduced motion (see the media query at the top) shows the final
+   frame straight away. */
+.fish-leap {
+  display: block;
+  margin: 0 auto;
+  overflow: visible;
+}
+
+.fish-leap-fish {
+  transform-box: view-box;
+  animation: nwFishLeap 0.95s cubic-bezier(0.3, 0.7, 0.35, 1) both 0.15s;
+}
+
+.fish-leap-trail {
+  stroke-dashoffset: 0;
+  animation: nwFade 0.6s ease both 0.5s;
+}
+
+.fish-leap-splash {
+  animation: nwFade 0.4s ease both 0.2s;
+}
+
+@keyframes nwFishLeap {
+  from {
+    opacity: 0;
+    transform: translate(-58px, 52px) rotate(-18deg);
+  }
+  35% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Line breaks: headings split into even lines instead of a long line and
+   a stray word, and paragraphs avoid a single word on their last line.
+   Browsers without support simply ignore these. */
+h1,
+h2,
+.invite-rsvp-heading,
+.details-panel-label,
+.rsvp-deadline {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+/* "to the wedding of" above the couple's names, as "Wedding of" sits on the
+   save-the-date. */
+.hero-wedding-of {
+  margin: clamp(18px, 2.6vw, 28px) 0 0;
+  font-family: var(--font-heading), Georgia, serif;
+  font-style: italic;
+  font-size: clamp(20px, 4.4vw, 26px);
+  color: var(--ink);
+  animation: nwHeroIn 0.6s ease both 0.08s;
+}
+
+.hero-wedding-of + .hero-names {
+  margin-top: 4px;
+}
+
+/* "Not sent yet" above the Send button once an answer is picked. */
+.rsvp-unsent {
+  margin: 22px 0 0;
+  text-align: center;
+  font-family: var(--font-heading), Georgia, serif;
+  font-style: italic;
+  font-size: 17px;
+  color: var(--gold-text);
+}
+
+.rsvp-hint-centred {
+  text-align: center;
+}
+
+/* The planning note's stay paragraph is only for guests who are coming. */
+.stay-hidden,
+html[data-declined="true"] .stay-note {
+  display: none;
+}
+
+html[data-declined="false"] .stay-note {
+  display: block;
 }
