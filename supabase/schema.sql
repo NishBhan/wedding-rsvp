@@ -99,3 +99,6 @@ create table if not exists admin_settings (
   updated_at timestamptz not null default now()
 );
 alter table admin_settings enable row level security;
+
+-- Admin: invite tiers (T1, T2, ...) for sending invites in batches.
+alter table invites add column if not exists tier smallint check (tier between 1 and 9);

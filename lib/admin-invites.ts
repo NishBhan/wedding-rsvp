@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { inviteTypeOf, inviteUrl, type InviteType } from "@/lib/invites";
 import { MAX_NAME_LENGTH } from "@/lib/site";
+import { parseTier, tierLabel } from "@/lib/tiers";
 
 // Server-only: adding and editing invites from /admin. Every change is
 // planned first (what changes, and what it does to a reply already given),
@@ -11,6 +12,8 @@ export type InviteInput = {
   type: InviteType;
   guestName: string;
   partnerName: string;
+  // undefined leaves the tier alone (tiers not set up yet); null clears it.
+  tier?: number | null;
 };
 
 export type InvitePlan =
@@ -18,7 +21,12 @@ export type InvitePlan =
       ok: true;
       changes: string[];
       warnings: string[];
-      row: { guest_name: string; partner_name: string | null; plus_one_allowed: boolean };
+      row: {
+        guest_name: string;
+        partner_name: string | null;
+        plus_one_allowed: boolean;
+        tier?: number | null;
+      };
       rsvpPatch: Record<string, null | boolean> | null;
     }
   | { ok: false; error: string };
@@ -36,6 +44,7 @@ type InviteRow = {
   partner_name: string | null;
   plus_one_allowed: boolean;
   sent_at?: string | null;
+  tier?: number | null;
 };
 
 const tidy = (s: string) => s.replace(/\s+/g, " ").trim();
@@ -67,15 +76,24 @@ export async function planInviteChange(
     return { ok: false, error: "The two names are the same." };
   }
 
-  const row = {
+  const tier = input.tier === undefined ? undefined : parseTier(input.tier);
+  if (tier === "invalid") return { ok: false, error: "Choose a tier from the list." };
+
+  const row: Extract<InvitePlan, { ok: true }>["row"] = {
     guest_name: guest,
     partner_name: partner || null,
     plus_one_allowed: input.type === "plus_one",
   };
+  if (tier !== undefined) row.tier = tier;
 
   const columns = "id, code, guest_name, partner_name, plus_one_allowed";
-  let list = await supabase.from("invites").select(`${columns}, sent_at`);
-  if (list.error) list = await supabase.from("invites").select(columns); // schema not updated yet
+  // Newer columns only exist once the latest schema.sql has been run.
+  let list = await supabase.from("invites").select(`${columns}, sent_at, tier`);
+  if (list.error) {
+    if (tier !== undefined) return { ok: false, error: "Run the latest schema.sql in Supabase to use tiers." };
+    list = await supabase.from("invites").select(`${columns}, sent_at`);
+  }
+  if (list.error) list = await supabase.from("invites").select(columns);
   const { data: all, error: listError } = list;
   if (listError) return { ok: false, error: "Couldn't load the guest list. Try again in a moment." };
   const invites = (all ?? []) as unknown as InviteRow[];
@@ -97,6 +115,9 @@ export async function planInviteChange(
       if (!current.partner_name) changes.push(`Partner added: ${partner}`);
       else if (!partner) changes.push(`Partner removed: ${current.partner_name}`);
       else changes.push(`Partner: ${current.partner_name} → ${partner}`);
+    }
+    if (tier !== undefined && (current.tier ?? null) !== tier) {
+      changes.push(`Tier: ${tierLabel(current.tier)} → ${tierLabel(tier)}`);
     }
 
     const { data: rsvp, error: rsvpError } = await supabase
@@ -143,6 +164,7 @@ export async function planInviteChange(
     changes.push(`Their link stays the same: ${inviteUrl(current.code)}`);
   } else {
     changes.push(`New invite (${TYPE_LABEL[input.type]}): ${namesOf(row)}`);
+    if (tier !== undefined) changes.push(`Tier: ${tierLabel(tier)}`);
     changes.push("A personal link is created when you save.");
   }
 

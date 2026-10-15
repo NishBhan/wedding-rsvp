@@ -14,6 +14,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { MESSAGE_TEMPLATE_KEY, MESSAGE_TEMPLATE_MAX } from "@/lib/invite-message";
 import { planInviteChange, type InviteInput } from "@/lib/admin-invites";
 import { inviteUrl } from "@/lib/invites";
+import { parseTier } from "@/lib/tiers";
 
 const LOGGED_OUT = "You've been logged out. Refresh the page and log in again.";
 
@@ -93,6 +94,21 @@ export async function saveMessageTemplate(
   }
   revalidatePath("/admin");
   return { status: "saved" };
+}
+
+// Sets an invite's tier (null clears it). Returns an error message or null.
+export async function setInviteTier(inviteId: string, raw: number | null): Promise<string | null> {
+  if (!isAdminAuthed()) return LOGGED_OUT;
+  if (!/^[\w-]{1,64}$/.test(inviteId)) return "Unknown invite.";
+  const tier = parseTier(raw);
+  if (tier === "invalid") return "Unknown tier.";
+  const { error } = await createAdminClient().from("invites").update({ tier }).eq("id", inviteId);
+  if (error) {
+    console.error("setInviteTier failed:", error.message);
+    return "Couldn't save. Try again.";
+  }
+  revalidatePath("/admin");
+  return null;
 }
 
 export type InvitePreview =

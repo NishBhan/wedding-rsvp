@@ -6,6 +6,8 @@ import { inviteTypeOf, inviteUrl, InviteType } from "@/lib/invites";
 import { DEFAULT_MESSAGE_TEMPLATE, MESSAGE_TEMPLATE_KEY } from "@/lib/invite-message";
 import { CopyMessageButton, MessageProvider, SentCheckbox, TemplateEditor } from "./invite-tools";
 import { AddInviteButton, EditInviteButton } from "./invite-editor";
+import { TierSelect } from "./invite-tools";
+import { parseTier, tierLabel } from "@/lib/tiers";
 
 type Rsvp = {
   id: string;
@@ -26,6 +28,7 @@ type InviteRow = {
   partner_name: string | null;
   plus_one_allowed: boolean;
   sent_at?: string | null;
+  tier?: number | null;
 };
 
 const INVITE_TYPE_LABEL: Record<InviteType, string> = {
@@ -40,7 +43,7 @@ export const metadata: Metadata = { robots: { index: false, follow: false } };
 export default async function AdminPage({
   searchParams,
 }: {
-  searchParams: { error?: string };
+  searchParams: { error?: string; tier?: string; unsent?: string };
 }) {
   if (!isAdminAuthed()) {
     return (
@@ -73,7 +76,12 @@ export default async function AdminPage({
   const loadInvites = (columns: string) =>
     supabase.from("invites").select(columns).order("guest_name", { ascending: true });
   let sentTracking = true;
-  let invitesResult = await loadInvites(`${INVITE_COLUMNS}, sent_at`);
+  let tiersEnabled = true;
+  let invitesResult = await loadInvites(`${INVITE_COLUMNS}, sent_at, tier`);
+  if (invitesResult.error) {
+    tiersEnabled = false;
+    invitesResult = await loadInvites(`${INVITE_COLUMNS}, sent_at`);
+  }
   if (invitesResult.error) {
     sentTracking = false;
     invitesResult = await loadInvites(INVITE_COLUMNS);
@@ -136,6 +144,33 @@ export default async function AdminPage({
   const inviteNames = (i: InviteRow) =>
     i.partner_name ? `${i.guest_name} & ${i.partner_name}` : i.guest_name;
 
+  // Tiers: which batch each invite goes out in. The list below can show
+  // one tier (?tier=2, or ?tier=none) and only invites not sent yet
+  // (?unsent=1), so a batch can be worked through top to bottom.
+  const tierOf = (i: InviteRow) => i.tier ?? null;
+  const tiersInUse = Array.from(new Set(invites.map(tierOf).filter((t): t is number => t !== null))).sort();
+  const hasUntiered = invites.some((i) => tierOf(i) === null);
+  const tierGroups: (number | null)[] = [...tiersInUse, ...(hasUntiered ? [null] : [])];
+  const tierFilter = !tiersEnabled || !searchParams.tier
+    ? undefined
+    : searchParams.tier === "none"
+      ? null
+      : parseTier(searchParams.tier);
+  const unsentOnly = sentTracking && searchParams.unsent === "1";
+  const shownInvites = invites.filter(
+    (i) =>
+      (tierFilter === undefined || tierFilter === "invalid" || tierOf(i) === tierFilter) &&
+      (!unsentOnly || !i.sent_at)
+  );
+  const filterHref = (tier: number | null | undefined, unsent: boolean) => {
+    const q = new URLSearchParams();
+    if (tier !== undefined) q.set("tier", tier === null ? "none" : String(tier));
+    if (unsent) q.set("unsent", "1");
+    const qs = q.toString();
+    return `/admin${qs ? `?${qs}` : ""}#invites`;
+  };
+  const activeTier = tierFilter === "invalid" ? undefined : tierFilter;
+
   return (
     <div className="admin-wrap">
       <div className="admin-header">
@@ -176,6 +211,24 @@ export default async function AdminPage({
           </div>
         )}
       </div>
+
+      {sentTracking && tiersEnabled && tierGroups.length > 0 && (
+        <div className="tier-stats" aria-label="Invites sent by tier">
+          {tierGroups.map((t) => {
+            const inTier = invites.filter((i) => tierOf(i) === t);
+            const sent = inTier.filter((i) => i.sent_at).length;
+            return (
+              <a
+                key={t ?? "none"}
+                href={filterHref(t, false)}
+                className={`tier-stat${sent === inTier.length ? " is-done" : ""}`}
+              >
+                <strong>{tierLabel(t)}</strong> {sent}/{inTier.length} sent
+              </a>
+            );
+          })}
+        </div>
+      )}
 
       <a className="export-link" href="/admin/export">
         Download CSV
@@ -227,30 +280,64 @@ export default async function AdminPage({
         </table>
       </div>
 
-      <h2 style={{ marginTop: 48 }}>Invites</h2>
+      <h2 id="invites" style={{ marginTop: 48 }}>Invites</h2>
       <p>
         Add a new invite, or use <strong>Edit</strong> on a row to fix a name or change between
         Single, Single + 1 and Couple. You&rsquo;ll see exactly what changes before anything is
         saved, and the guest&rsquo;s link never changes.
       </p>
-      {(!sentTracking || templateError) && (
+      {(!sentTracking || !tiersEnabled || templateError) && (
         <p className="error" style={{ marginBottom: 16 }}>
-          To save the message and tick off sent invites, run the latest{" "}
+          To save the message, tick off sent invites and use tiers, run the latest{" "}
           <code>supabase/schema.sql</code> in the Supabase SQL Editor, then refresh this page.
         </p>
       )}
 
-      <TemplateEditor template={template} enabled={!templateError} />
+      {/* Open until a message has been saved, then folded away so the
+          list is close to the top while sending a batch. */}
+      <details className="template-details" open={!templateRow || Boolean(templateError)}>
+        <summary>Invite message</summary>
+        <TemplateEditor template={template} enabled={!templateError} />
+      </details>
 
       <MessageProvider template={template}>
       <div className="invites-toolbar">
-        <AddInviteButton />
+        <AddInviteButton defaultTier={tiersEnabled ? (activeTier ?? null) : undefined} />
       </div>
+      {(tiersEnabled || sentTracking) && (
+        <nav className="invite-filters" aria-label="Filter invites">
+          {tiersEnabled && (
+            <div className="filter-tabs">
+              <a href={filterHref(undefined, unsentOnly)} aria-current={activeTier === undefined ? "page" : undefined}>
+                All ({invites.length})
+              </a>
+              {tierGroups.map((t) => (
+                <a
+                  key={t ?? "none"}
+                  href={filterHref(t, unsentOnly)}
+                  aria-current={activeTier === t ? "page" : undefined}
+                >
+                  {tierLabel(t)} ({invites.filter((i) => tierOf(i) === t).length})
+                </a>
+              ))}
+            </div>
+          )}
+          {sentTracking && (
+            <a className="filter-toggle" href={filterHref(activeTier, !unsentOnly)} data-on={unsentOnly ? "true" : undefined}>
+              <span aria-hidden="true">{unsentOnly ? "☑" : "☐"}</span> Not sent yet only
+            </a>
+          )}
+          <span className="filter-count">
+            Showing {shownInvites.length} of {invites.length}
+          </span>
+        </nav>
+      )}
       <div className="table-scroll">
         <table>
           <thead>
             <tr>
               <th>Sent</th>
+              {tiersEnabled && <th>Tier</th>}
               <th>Invited</th>
               <th>Type</th>
               <th>Message</th>
@@ -262,7 +349,14 @@ export default async function AdminPage({
             </tr>
           </thead>
           <tbody>
-            {invites.map((i) => {
+            {shownInvites.length === 0 && (
+              <tr>
+                <td colSpan={9}>
+                  {unsentOnly ? "Everyone here has been sent their invite." : "No invites here yet."}
+                </td>
+              </tr>
+            )}
+            {shownInvites.map((i) => {
               const url = inviteUrl(i.code);
               const names = inviteNames(i);
               return (
@@ -274,6 +368,11 @@ export default async function AdminPage({
                       "-"
                     )}
                   </td>
+                  {tiersEnabled && (
+                    <td>
+                      <TierSelect inviteId={i.id} tier={tierOf(i)} label={names} />
+                    </td>
+                  )}
                   <td>{names}</td>
                   <td>{INVITE_TYPE_LABEL[inviteTypeOf(i)]}</td>
                   <td>
@@ -298,6 +397,7 @@ export default async function AdminPage({
                         type: inviteTypeOf(i),
                         guestName: i.guest_name,
                         partnerName: i.partner_name ?? "",
+                        tier: tiersEnabled ? tierOf(i) : undefined,
                       }}
                     />
                   </td>

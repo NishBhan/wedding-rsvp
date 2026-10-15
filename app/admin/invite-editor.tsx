@@ -4,8 +4,16 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { previewInvite, saveInvite, type InvitePreview } from "./actions";
 import type { InviteType } from "@/lib/invites";
 import { MAX_NAME_LENGTH } from "@/lib/site";
+import { TIERS, tierLabel } from "@/lib/tiers";
 
-type Initial = { id?: string; type: InviteType; guestName: string; partnerName: string };
+// tier is undefined when tiers aren't set up in the database yet.
+type Initial = {
+  id?: string;
+  type: InviteType;
+  guestName: string;
+  partnerName: string;
+  tier?: number | null;
+};
 
 const TYPES: { value: InviteType; label: string; hint: string }[] = [
   { value: "solo", label: "Single", hint: "One guest, no plus-one" },
@@ -19,13 +27,14 @@ function InviteEditor({ initial, onClose }: { initial: Initial; onClose: () => v
   const [type, setType] = useState<InviteType>(initial.type);
   const [guestName, setGuestName] = useState(initial.guestName);
   const [partnerName, setPartnerName] = useState(initial.partnerName);
+  const [tier, setTier] = useState<number | null | undefined>(initial.tier);
   const [preview, setPreview] = useState<InvitePreview | null>(null);
   const [result, setResult] = useState<{ message: string; link: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const adding = !initial.id;
 
-  const input = { id: initial.id, type, guestName, partnerName };
+  const input = { id: initial.id, type, guestName, partnerName, tier };
   const reviewing = preview?.ok === true;
 
   const check = () =>
@@ -162,6 +171,24 @@ function InviteEditor({ initial, onClose }: { initial: Initial; onClose: () => v
           />
         </div>
       )}
+      {tier !== undefined && (
+        <div>
+          <label htmlFor="editor-tier">Tier</label>
+          <select
+            id="editor-tier"
+            className="tier-select"
+            value={tier ?? ""}
+            onChange={(e) => setTier(e.target.value ? Number(e.target.value) : null)}
+          >
+            <option value="">No tier</option>
+            {TIERS.map((t) => (
+              <option key={t} value={t}>
+                {tierLabel(t)}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
       {error && <p className="error">{error}</p>}
       <div className="editor-actions">
         <button type="submit" className="admin-small-button" disabled={pending}>
@@ -211,16 +238,18 @@ function EditorDialog({
   );
 }
 
-export function AddInviteButton() {
+// defaultTier: the tier being viewed (null = no tier), or undefined when
+// tiers aren't set up yet.
+export function AddInviteButton({ defaultTier }: { defaultTier?: number | null }) {
   return (
     <EditorDialog
       label="+ Add an invite"
       className="admin-small-button"
-      initial={{ type: "solo", guestName: "", partnerName: "" }}
+      initial={{ type: "solo", guestName: "", partnerName: "", tier: defaultTier }}
     />
   );
 }
 
-export function EditInviteButton({ initial }: { initial: Required<Initial> }) {
+export function EditInviteButton({ initial }: { initial: Initial & { id: string } }) {
   return <EditorDialog label="Edit" className="admin-small-button sender-option" initial={initial} />;
 }

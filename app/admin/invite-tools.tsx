@@ -2,7 +2,8 @@
 
 import { createContext, useContext, useEffect, useState, useTransition } from "react";
 import { useFormState, useFormStatus } from "react-dom";
-import { saveMessageTemplate, setInviteSent, type TemplateState } from "./actions";
+import { saveMessageTemplate, setInviteSent, setInviteTier, type TemplateState } from "./actions";
+import { TIERS, tierLabel } from "@/lib/tiers";
 import {
   MESSAGE_TEMPLATE_MAX,
   SENDERS,
@@ -192,7 +193,9 @@ export function TemplateEditor({
 
   return (
     <form action={action} className="template-editor">
-      <label htmlFor="template">Invite message</label>
+      <label htmlFor="template" className="visually-hidden">
+        Invite message
+      </label>
       <p className="admin-help">
         Each row&rsquo;s &ldquo;Copy message&rdquo; button fills in: <code>{"{you}"}</code>{" "}
         (&ldquo;you&rdquo;, or &ldquo;you &amp; Joost&rdquo; for a couple, partner&rsquo;s first
@@ -216,5 +219,55 @@ export function TemplateEditor({
         {state.status === "error" && <span className="error">{state.message}</span>}
       </div>
     </form>
+  );
+}
+
+// Tier dropdown for one invite. Saves on change; puts the old tier back
+// and says why if the save fails.
+export function TierSelect({
+  inviteId,
+  tier,
+  label,
+}: {
+  inviteId: string;
+  tier: number | null;
+  label: string;
+}) {
+  const [value, setValue] = useState<number | null>(tier);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  useEffect(() => setValue(tier), [tier]);
+
+  return (
+    <span className="sent-cell">
+      <select
+        className="tier-select"
+        value={value ?? ""}
+        disabled={pending}
+        aria-label={`Tier for ${label}`}
+        onChange={(e) => {
+          const next = e.target.value ? Number(e.target.value) : null;
+          const before = value;
+          setValue(next);
+          setError(null);
+          startTransition(async () => {
+            const problem = await setInviteTier(inviteId, next);
+            if (problem) {
+              setValue(before);
+              setError(problem);
+            }
+          });
+        }}
+      >
+        <option value="">–</option>
+        {TIERS.map((t) => (
+          <option key={t} value={t}>
+            {tierLabel(t)}
+          </option>
+        ))}
+      </select>
+      {error && <span className="error">{error}</span>}
+    </span>
   );
 }
