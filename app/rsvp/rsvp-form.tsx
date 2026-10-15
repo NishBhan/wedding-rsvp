@@ -134,8 +134,8 @@ export default function RsvpForm({ closed = false }: { closed?: boolean }) {
         <MonogramImg name="monogram-mark" alt="" className="monogram" />
         <h1>
           {isAttending
-            ? "We're so excited to celebrate with you!"
-            : "Thank you for letting us know."}
+            ? "We can’t wait to celebrate with you!"
+            : "We’ll miss you"}
         </h1>
         <div
           className="hero-dates"
@@ -147,8 +147,8 @@ export default function RsvpForm({ closed = false }: { closed?: boolean }) {
         <div className="hero-location" style={{ margin: "20px 0 0", animation: "none" }}>BENGALURU, INDIA</div>
         <p>
           {isAttending
-            ? `Thank you, ${firstName || "friend"} — your place is saved.`
-            : "We’ll miss having you with us in Bengaluru, but completely understand. Thank you for telling us early."}
+            ? `Thank you, ${firstName || "friend"}. Your place is saved.`
+            : "Thank you for letting us know, and for telling us early. We completely understand."}
         </p>
 
         {hasPlusOne && (
@@ -234,7 +234,7 @@ export default function RsvpForm({ closed = false }: { closed?: boolean }) {
                 goToStep("plus");
               }}
             >
-              Yes! I&apos;ll be there
+              Yes, I&apos;ll be there
             </button>
             <button
               type="button"
@@ -245,7 +245,7 @@ export default function RsvpForm({ closed = false }: { closed?: boolean }) {
                 goToStep("decline");
               }}
             >
-              I&apos;m sorry, I can&apos;t make it
+              Sorry, I can&apos;t make it
             </button>
           </div>
           <p className="rsvp-fine-note">If you&apos;re bringing someone, you can add them next.</p>
@@ -257,7 +257,7 @@ export default function RsvpForm({ closed = false }: { closed?: boolean }) {
 
       {step === "plus" && (
         <div className="rsvp-section">
-          <h1 className="plus-one-heading">Bringing a plus one?</h1>
+          <h1 className="plus-one-heading">Bringing someone with you?</h1>
 
           <div className="plus-one-grid">
             <label className="plus-one-option">
@@ -281,7 +281,7 @@ export default function RsvpForm({ closed = false }: { closed?: boolean }) {
                   setPlusOneName("");
                 }}
               />
-              <span>No, just me</span>
+              <span>Just me</span>
             </label>
           </div>
 
@@ -315,17 +315,17 @@ export default function RsvpForm({ closed = false }: { closed?: boolean }) {
 
       {step === "decline" && (
         <div className="rsvp-section">
-          <h1>We understand!</h1>
+          <h1>We&rsquo;ll miss you</h1>
           <p className="subtitle">
-            Thank you for letting us know early - it genuinely helps. We&rsquo;ll miss
-            having you with us in Bengaluru, but completely understand.
+            Thank you for letting us know early. It really helps, and we completely
+            understand.
           </p>
 
           {state.status === "error" && <p className="rsvp-error">{state.message}</p>}
 
           <SubmitButton />
           <button type="button" className="link-back" onClick={() => goToStep("attend")}>
-            I change my mind!
+            I&apos;ve changed my mind
           </button>
         </div>
       )}

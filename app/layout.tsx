@@ -17,19 +17,19 @@ const cormorant = Cormorant_Garamond({
 const siteUrl = SITE_URL.replace(/\/$/, "");
 
 export const metadata: Metadata = {
-  title: "FishfoundherWater | Wedding",
-  description: "Everything you need for Nishtha & Wouter's wedding - 14-15th November 2027",
+  title: "Nishtha & Wouter | 14–15 November 2027",
+  description: "Nishtha & Wouter's wedding, 14–15 November 2027, Bengaluru, India.",
   openGraph: {
-    title: "FishfoundherWater | Wedding",
-    description: "Everything you need for Nishtha & Wouter's wedding - 14-15th November 2027",
+    title: "Nishtha & Wouter | 14–15 November 2027",
+    description: "Nishtha & Wouter's wedding, 14–15 November 2027, Bengaluru, India.",
     url: siteUrl,
     siteName: "Nishtha & Wouter",
     images: [OG_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
-    title: "FishfoundherWater | Wedding",
-    description: "Everything you need for Nishtha & Wouter's wedding - 14-15th November 2027",
+    title: "Nishtha & Wouter | 14–15 November 2027",
+    description: "Nishtha & Wouter's wedding, 14–15 November 2027, Bengaluru, India.",
     images: [OG_IMAGE.url],
   },
 };

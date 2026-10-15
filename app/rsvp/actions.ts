@@ -6,7 +6,7 @@ import { getInviteByCode, InviteLookupError } from "@/lib/invites";
 import { rsvpsAreOpen, RSVPS_CLOSED_MID_FORM_MESSAGE } from "@/lib/rsvp-window";
 import { MAX_NAME_LENGTH } from "@/lib/site";
 
-const TOO_LONG_MESSAGE = `Names can be up to ${MAX_NAME_LENGTH} characters. Please shorten it a little.`;
+const TOO_LONG_MESSAGE = `Names can be up to ${MAX_NAME_LENGTH} characters, so please shorten it slightly.`;
 
 export type RsvpState = {
   status: "idle" | "success" | "error";
@@ -47,7 +47,7 @@ export async function submitRsvp(
   if (attending && plusOne && !plusOneName) {
     return {
       status: "error",
-      message: "We just need a name for them — you can change it later.",
+      message: "Please add their name. You can change it later.",
     };
   }
 
@@ -102,7 +102,7 @@ async function submitInviteRsvp(code: string, formData: FormData): Promise<RsvpS
   if (plusOne && !plusOneName) {
     return {
       status: "error",
-      message: "We just need a name for them — you can change it later.",
+      message: "Please add their name. You can change it later.",
     };
   }
 

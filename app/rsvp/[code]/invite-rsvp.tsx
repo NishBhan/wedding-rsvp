@@ -273,7 +273,7 @@ export default function InviteRsvp({
                   setAttending(v);
                   setPlusOne("");
                 }}
-                label="Sadly, I can’t"
+                label="Sorry, I can’t make it"
               />
             </div>
           )}
