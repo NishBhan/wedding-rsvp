@@ -11,10 +11,11 @@ export default function AttendingDetails() {
   return (
     <>
       <div className="details-panel">
-        <div className="details-panel-label">WE&rsquo;RE TAKING CARE OF YOUR STAY</div>
+        <div className="details-panel-label">WE&rsquo;RE ARRANGING YOUR STAY</div>
         <p>
-          We&rsquo;re arranging where everyone stays on the nights of 14 and 15 November,
-          so please don&rsquo;t book anything for those two nights. If you&rsquo;d like to
+          We&rsquo;re arranging where everyone stays on the nights of 14 and 15 November
+          and will share the details closer to the time, so please don&rsquo;t book
+          anything for those two nights. If you&rsquo;d like to
           make a longer holiday of your trip, we&rsquo;re happy to put you in touch with a
           travel desk.
         </p>

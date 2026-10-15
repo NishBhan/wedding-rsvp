@@ -20,8 +20,9 @@ export default function PlanningNote() {
           suits you.
         </p>
         <p>
-          We&rsquo;re arranging where everyone stays on the nights of 14 and 15 November,
-          so please don&rsquo;t book anything for those two nights.
+          We&rsquo;re arranging where everyone stays on the nights of 14 and 15 November
+          and will share the details closer to the time, so please don&rsquo;t book
+          anything for those two nights.
         </p>
         <p className="planning-note-fine">
           The full agenda is on its way, along with details on getting around, what to
