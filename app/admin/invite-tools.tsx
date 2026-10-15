@@ -160,7 +160,12 @@ export function CopyMessageButton({
       }}
     >
       {state === "copied"
-        ? "Copied"
+        ? (
+            <>
+              <span className="label-long">Copied</span>
+              <span className="label-short">✓ Done</span>
+            </>
+          )
         : state === "failed"
           ? "Couldn't copy"
           : state === "sender"

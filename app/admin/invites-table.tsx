@@ -68,7 +68,9 @@ export function InvitesTable({
           <thead>
             <tr>
               <th>Sent</th>
+              {tiersEnabled && <th>Tier</th>}
               <th>Invited</th>
+              <th>Type</th>
               <th>
                 <span className="visually-hidden">Message</span>
               </th>
@@ -76,8 +78,6 @@ export function InvitesTable({
                 <span className="visually-hidden">Edit</span>
               </th>
               <th>Replied</th>
-              {tiersEnabled && <th>Tier</th>}
-              <th>Type</th>
               <th>Personal link</th>
             </tr>
           </thead>
@@ -96,7 +96,13 @@ export function InvitesTable({
                     "-"
                   )}
                 </td>
+                {tiersEnabled && (
+                  <td>
+                    <TierSelect inviteId={r.id} tier={r.tier} label={r.names} />
+                  </td>
+                )}
                 <td className="invite-names">{r.names}</td>
+                <td className="invite-type">{r.typeLabel}</td>
                 <td>
                   <CopyMessageButton guestName={r.guestName} partnerName={r.partnerName} link={r.url} />
                 </td>
@@ -114,12 +120,6 @@ export function InvitesTable({
                 <td>
                   <span className={`badge ${r.replied ? "yes" : "no"}`}>{r.replied ? "Yes" : "Not yet"}</span>
                 </td>
-                {tiersEnabled && (
-                  <td>
-                    <TierSelect inviteId={r.id} tier={r.tier} label={r.names} />
-                  </td>
-                )}
-                <td className="invite-type">{r.typeLabel}</td>
                 <td>
                   <a href={r.url}>{r.url}</a>
                 </td>
