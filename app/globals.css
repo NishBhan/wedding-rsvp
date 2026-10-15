@@ -1307,3 +1307,13 @@ p {
 .hero-wedding-of + .hero-names {
   margin-top: 4px;
 }
+
+/* "Not sent yet" above the Send button once an answer is picked. */
+.rsvp-unsent {
+  margin: 22px 0 0;
+  text-align: center;
+  font-family: var(--font-heading), Georgia, serif;
+  font-style: italic;
+  font-size: 17px;
+  color: var(--gold-text);
+}

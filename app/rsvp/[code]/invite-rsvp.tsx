@@ -214,6 +214,15 @@ export default function InviteRsvp({
     ? attending !== "" && partnerAttending !== ""
     : attending !== "" && (!allowsPlusOne || attending === "no" || plusOne !== "");
 
+  // Tapping an answer ticks it, which can look final. Until it's sent,
+  // say so: any answer on a first reply, or any change to a saved one.
+  const unsent = existing
+    ? attending !== yesNo(existing.attending) ||
+      (isCouple && partnerAttending !== yesNo(existing.partnerAttending)) ||
+      (allowsPlusOne &&
+        (plusOne !== yesNo(existing.plusOne) || plusOneName.trim() !== (existing.plusOneName ?? "")))
+    : attending !== "" || partnerAttending !== "";
+
   return (
     <RsvpSection sectionRef={sectionRef}>
       <div key="form">
@@ -316,6 +325,10 @@ export default function InviteRsvp({
           )}
 
           {state.status === "error" && <p className="rsvp-error">{state.message}</p>}
+
+          {unsent && state.status !== "error" && (
+            <p className="rsvp-unsent">Not sent yet. Tap &ldquo;Send my reply&rdquo; to let us know.</p>
+          )}
 
           <div className="invite-send">
             <SendButton disabled={!ready} />
