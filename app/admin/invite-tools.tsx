@@ -165,7 +165,12 @@ export function CopyMessageButton({
           ? "Couldn't copy"
           : state === "sender"
             ? "Choose who's sending"
-            : "Copy message"}
+            : (
+              <>
+                <span className="label-long">Copy message</span>
+                <span className="label-short">Copy</span>
+              </>
+            )}
     </button>
   );
 }

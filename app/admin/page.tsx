@@ -4,9 +4,9 @@ import { login, logout } from "./actions";
 import { isAdminAuthed } from "@/lib/admin-auth";
 import { inviteTypeOf, inviteUrl, InviteType } from "@/lib/invites";
 import { DEFAULT_MESSAGE_TEMPLATE, MESSAGE_TEMPLATE_KEY } from "@/lib/invite-message";
-import { CopyMessageButton, MessageProvider, SentCheckbox, TemplateEditor } from "./invite-tools";
-import { AddInviteButton, EditInviteButton } from "./invite-editor";
-import { TierSelect } from "./invite-tools";
+import { MessageProvider, TemplateEditor } from "./invite-tools";
+import { AddInviteButton } from "./invite-editor";
+import { InvitesTable } from "./invites-table";
 import { parseTier, tierLabel } from "@/lib/tiers";
 
 type Rsvp = {
@@ -230,6 +230,76 @@ export default async function AdminPage({
         </div>
       )}
 
+      <h2 id="invites" className="admin-section-title">Invites</h2>
+      {(!sentTracking || !tiersEnabled || templateError) && (
+        <p className="error" style={{ marginBottom: 16 }}>
+          To save the message, tick off sent invites and use tiers, run the latest{" "}
+          <code>supabase/schema.sql</code> in the Supabase SQL Editor, then refresh this page.
+        </p>
+      )}
+
+      <MessageProvider template={template}>
+        <div className="invites-toolbar">
+          <AddInviteButton defaultTier={tiersEnabled ? (activeTier ?? null) : undefined} />
+        </div>
+        {(tiersEnabled || sentTracking) && (
+          <nav className="invite-filters" aria-label="Filter invites">
+            {tiersEnabled && (
+              <div className="filter-tabs">
+                <a
+                  href={filterHref(undefined, unsentOnly)}
+                  aria-current={activeTier === undefined ? "page" : undefined}
+                >
+                  All ({invites.length})
+                </a>
+                {tierGroups.map((t) => (
+                  <a
+                    key={t ?? "none"}
+                    href={filterHref(t, unsentOnly)}
+                    aria-current={activeTier === t ? "page" : undefined}
+                  >
+                    {tierLabel(t)} ({invites.filter((i) => tierOf(i) === t).length})
+                  </a>
+                ))}
+              </div>
+            )}
+            {sentTracking && (
+              <a
+                className="filter-toggle"
+                href={filterHref(activeTier, !unsentOnly)}
+                data-on={unsentOnly ? "true" : undefined}
+              >
+                <span aria-hidden="true">{unsentOnly ? "☑" : "☐"}</span> Not sent yet only
+              </a>
+            )}
+          </nav>
+        )}
+        <InvitesTable
+          total={invites.length}
+          tiersEnabled={tiersEnabled}
+          sentTracking={sentTracking}
+          emptyMessage={unsentOnly ? "Everyone here has been sent their invite." : "No invites here yet."}
+          rows={shownInvites.map((i) => ({
+            id: i.id,
+            url: inviteUrl(i.code),
+            names: inviteNames(i),
+            guestName: i.guest_name,
+            partnerName: i.partner_name,
+            type: inviteTypeOf(i),
+            typeLabel: INVITE_TYPE_LABEL[inviteTypeOf(i)],
+            tier: tierOf(i),
+            sent: Boolean(i.sent_at),
+            replied: rsvpByInvite.has(i.id),
+          }))}
+        />
+      </MessageProvider>
+      <p className="admin-help" style={{ marginTop: 12 }}>
+        Use <strong>Edit</strong> to fix a name or change between Single, Single + 1 and Couple.
+        You&rsquo;ll see exactly what changes before anything is saved, and the guest&rsquo;s link
+        never changes.
+      </p>
+
+      <h2 className="admin-section-title">Replies</h2>
       <a className="export-link" href="/admin/export">
         Download CSV
       </a>
@@ -280,134 +350,8 @@ export default async function AdminPage({
         </table>
       </div>
 
-      <h2 id="invites" style={{ marginTop: 48 }}>Invites</h2>
-      <p>
-        Add a new invite, or use <strong>Edit</strong> on a row to fix a name or change between
-        Single, Single + 1 and Couple. You&rsquo;ll see exactly what changes before anything is
-        saved, and the guest&rsquo;s link never changes.
-      </p>
-      {(!sentTracking || !tiersEnabled || templateError) && (
-        <p className="error" style={{ marginBottom: 16 }}>
-          To save the message, tick off sent invites and use tiers, run the latest{" "}
-          <code>supabase/schema.sql</code> in the Supabase SQL Editor, then refresh this page.
-        </p>
-      )}
-
-      {/* Open until a message has been saved, then folded away so the
-          list is close to the top while sending a batch. */}
-      <details className="template-details" open={!templateRow || Boolean(templateError)}>
-        <summary>Invite message</summary>
-        <TemplateEditor template={template} enabled={!templateError} />
-      </details>
-
-      <MessageProvider template={template}>
-      <div className="invites-toolbar">
-        <AddInviteButton defaultTier={tiersEnabled ? (activeTier ?? null) : undefined} />
-      </div>
-      {(tiersEnabled || sentTracking) && (
-        <nav className="invite-filters" aria-label="Filter invites">
-          {tiersEnabled && (
-            <div className="filter-tabs">
-              <a href={filterHref(undefined, unsentOnly)} aria-current={activeTier === undefined ? "page" : undefined}>
-                All ({invites.length})
-              </a>
-              {tierGroups.map((t) => (
-                <a
-                  key={t ?? "none"}
-                  href={filterHref(t, unsentOnly)}
-                  aria-current={activeTier === t ? "page" : undefined}
-                >
-                  {tierLabel(t)} ({invites.filter((i) => tierOf(i) === t).length})
-                </a>
-              ))}
-            </div>
-          )}
-          {sentTracking && (
-            <a className="filter-toggle" href={filterHref(activeTier, !unsentOnly)} data-on={unsentOnly ? "true" : undefined}>
-              <span aria-hidden="true">{unsentOnly ? "☑" : "☐"}</span> Not sent yet only
-            </a>
-          )}
-          <span className="filter-count">
-            Showing {shownInvites.length} of {invites.length}
-          </span>
-        </nav>
-      )}
-      <div className="table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th>Sent</th>
-              {tiersEnabled && <th>Tier</th>}
-              <th>Invited</th>
-              <th>Type</th>
-              <th>Message</th>
-              <th>Personal link</th>
-              <th>Replied</th>
-              <th>
-                <span className="visually-hidden">Edit</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {shownInvites.length === 0 && (
-              <tr>
-                <td colSpan={9}>
-                  {unsentOnly ? "Everyone here has been sent their invite." : "No invites here yet."}
-                </td>
-              </tr>
-            )}
-            {shownInvites.map((i) => {
-              const url = inviteUrl(i.code);
-              const names = inviteNames(i);
-              return (
-                <tr key={i.id} className={i.sent_at ? "invite-sent" : undefined}>
-                  <td>
-                    {sentTracking ? (
-                      <SentCheckbox inviteId={i.id} sent={Boolean(i.sent_at)} label={names} />
-                    ) : (
-                      "-"
-                    )}
-                  </td>
-                  {tiersEnabled && (
-                    <td>
-                      <TierSelect inviteId={i.id} tier={tierOf(i)} label={names} />
-                    </td>
-                  )}
-                  <td>{names}</td>
-                  <td>{INVITE_TYPE_LABEL[inviteTypeOf(i)]}</td>
-                  <td>
-                    <CopyMessageButton
-                      guestName={i.guest_name}
-                      partnerName={i.partner_name}
-                      link={url}
-                    />
-                  </td>
-                  <td>
-                    <a href={url}>{url}</a>
-                  </td>
-                  <td>
-                    <span className={`badge ${rsvpByInvite.has(i.id) ? "yes" : "no"}`}>
-                      {rsvpByInvite.has(i.id) ? "Yes" : "Not yet"}
-                    </span>
-                  </td>
-                  <td>
-                    <EditInviteButton
-                      initial={{
-                        id: i.id,
-                        type: inviteTypeOf(i),
-                        guestName: i.guest_name,
-                        partnerName: i.partner_name ?? "",
-                        tier: tiersEnabled ? tierOf(i) : undefined,
-                      }}
-                    />
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-      </MessageProvider>
+      <h2 className="admin-section-title">Invite message</h2>
+      <TemplateEditor template={template} enabled={!templateError} />
     </div>
   );
 }
