@@ -10,4 +10,4 @@ export function rsvpsAreOpen(now: Date = new Date()) {
 }
 
 export const RSVPS_CLOSED_MID_FORM_MESSAGE =
-  "Replies closed before we could save this, so nothing has changed. If your plans have changed, please message Nishtha or Wouter directly.";
+  "Replies closed before we could save this, so nothing has changed. If your plans have changed, please message Nish or Wout on WhatsApp.";

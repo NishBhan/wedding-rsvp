@@ -13,7 +13,7 @@ export default function Error() {
             <MonogramImg name="monogram-mark" alt="" className="monogram" />
             <h1>Something went wrong on this page.</h1>
             <p>
-              If you were sending your RSVP, it may still have reached us. Please
+              If you were sending your reply, it may still have reached us. Please
               reopen the link you were sent to check your reply, or try again.
             </p>
             <button type="button" className="btn-primary" onClick={() => window.location.reload()}>

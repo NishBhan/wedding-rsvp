@@ -61,7 +61,7 @@ export function rsvpReminderIcs(link: string) {
     start: RSVP_REMINDER_START,
     end: RSVP_REMINDER_END,
     summary: RSVP_REMINDER_TITLE,
-    description: `RSVP here: ${link}`,
+    description: `Reply here: ${link}`,
     url: link,
   });
 }

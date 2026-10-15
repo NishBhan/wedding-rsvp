@@ -41,7 +41,7 @@ export default function SaveTheDate() {
 
         <div className="hero-cta">
           <Link href="/rsvp" className="btn-primary hero-btn">
-            Confirm your RSVP!
+            Reply now
           </Link>
         </div>
 

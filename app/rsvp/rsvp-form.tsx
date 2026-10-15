@@ -18,7 +18,7 @@ function SubmitButton() {
   const { pending } = useFormStatus();
   return (
     <button type="submit" className="btn-primary" disabled={pending}>
-      {pending ? "Sending..." : "Send my RSVP"}
+      {pending ? "Sending…" : "Send my reply"}
     </button>
   );
 }
@@ -79,9 +79,9 @@ function LotusMotif() {
 }
 
 const PROGRESS_LABEL: Record<Step, string> = {
-  name: "RSVP · Step 1 of 3",
-  attend: "RSVP · Step 2 of 3",
-  plus: "RSVP · Step 3 of 3",
+  name: "Reply · Step 1 of 3",
+  attend: "Reply · Step 2 of 3",
+  plus: "Reply · Step 3 of 3",
   decline: "",
 };
 
@@ -116,8 +116,8 @@ export default function RsvpForm({ closed = false }: { closed?: boolean }) {
         <MonogramImg name="monogram-mark" alt="" className="monogram" />
         <h1>Replies have now closed.</h1>
         <p>
-          Thank you to everyone who replied. If your plans have changed, please message
-          Nishtha or Wouter directly and we&rsquo;ll sort it out together.
+          Thank you to everyone who replied. If your plans have changed, just message
+          Nish or Wout on WhatsApp and we&rsquo;ll sort it out together.
         </p>
       </div>
     );
@@ -184,7 +184,7 @@ export default function RsvpForm({ closed = false }: { closed?: boolean }) {
           <MonogramImg name="monogram-mark" alt="" className="step-monogram" />
           <h1>We&apos;d love to know if you can join us.</h1>
           <p className="subtitle">14&ndash;15 November 2027, Bengaluru, India.</p>
-          <p className="rsvp-deadline">Kindly reply by {RSVP_DEADLINE_LABEL}</p>
+          <p className="rsvp-deadline">Please reply by {RSVP_DEADLINE_LABEL}</p>
 
           <div className="name-field">
             <label htmlFor="name" className="rsvp-label">

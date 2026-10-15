@@ -23,7 +23,7 @@ function SendButton({ disabled }: { disabled: boolean }) {
   const { pending } = useFormStatus();
   return (
     <button type="submit" className="btn-primary" disabled={pending || disabled}>
-      {pending ? "Sending..." : "Send my reply"}
+      {pending ? "Sending…" : "Send my reply"}
     </button>
   );
 }
@@ -150,7 +150,7 @@ export default function InviteRsvp({
           <p>{summary ?? "We didn’t receive a reply from you before replies closed."}</p>
           {!state.closed && (
             <p className="rsvp-fine-note">
-              If anything has changed, please message Nishtha or Wouter directly and
+              If anything has changed, just message Nish or Wout on WhatsApp and
               we&rsquo;ll sort it out together.
             </p>
           )}
@@ -224,7 +224,7 @@ export default function InviteRsvp({
         <p className="rsvp-deadline">
           {existing
             ? `You can change your reply on or before ${RSVP_DEADLINE_LABEL}`
-            : `Kindly reply by ${RSVP_DEADLINE_LABEL}`}
+            : `Please reply by ${RSVP_DEADLINE_LABEL}`}
         </p>
         {existing && (
           <p className="rsvp-fine-note">
