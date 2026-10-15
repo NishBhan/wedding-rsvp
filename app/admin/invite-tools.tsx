@@ -1,9 +1,70 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { createContext, useContext, useEffect, useState, useTransition } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { saveMessageTemplate, setInviteSent, type TemplateState } from "./actions";
-import { MESSAGE_TEMPLATE_MAX } from "@/lib/invite-message";
+import {
+  MESSAGE_TEMPLATE_MAX,
+  SENDERS,
+  fillMessage,
+  needsSender,
+  type Sender,
+} from "@/lib/invite-message";
+
+// Who is sending, remembered on this device: Nish's phone stays "Nish".
+const SENDER_STORAGE_KEY = "wedding-admin-sender";
+
+const MessageContext = createContext<{ template: string; sender: Sender | null }>({
+  template: "",
+  sender: null,
+});
+
+export function MessageProvider({
+  template,
+  children,
+}: {
+  template: string;
+  children: React.ReactNode;
+}) {
+  const [sender, setSender] = useState<Sender | null>(null);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(SENDER_STORAGE_KEY);
+      if (saved && (SENDERS as readonly string[]).includes(saved)) setSender(saved as Sender);
+    } catch {
+      // Storage blocked: just ask again each visit.
+    }
+  }, []);
+
+  const choose = (s: Sender) => {
+    setSender(s);
+    try {
+      localStorage.setItem(SENDER_STORAGE_KEY, s);
+    } catch {}
+  };
+
+  return (
+    <MessageContext.Provider value={{ template, sender }}>
+      <div className="sender-switch" role="radiogroup" aria-label="Sending as">
+        <span className="sender-label">Sending as</span>
+        {SENDERS.map((s) => (
+          <button
+            key={s}
+            type="button"
+            role="radio"
+            aria-checked={sender === s}
+            className={`admin-small-button sender-option${sender === s ? " is-active" : ""}`}
+            onClick={() => choose(s)}
+          >
+            {s}
+          </button>
+        ))}
+      </div>
+      {children}
+    </MessageContext.Provider>
+  );
+}
 
 // "Sent" tickbox for one invite. Ticks straight away and saves in the
 // background; if the save fails it unticks again and says why.
@@ -68,8 +129,18 @@ async function copyText(text: string) {
 }
 
 // Copies one guest's filled-in message, link included, ready to paste.
-export function CopyMessageButton({ message }: { message: string }) {
-  const [state, setState] = useState<"idle" | "copied" | "failed">("idle");
+export function CopyMessageButton({
+  guestName,
+  partnerName,
+  link,
+}: {
+  guestName: string;
+  partnerName: string | null;
+  link: string;
+}) {
+  const { template, sender } = useContext(MessageContext);
+  const [state, setState] = useState<"idle" | "copied" | "failed" | "sender">("idle");
+  const message = fillMessage(template, { guestName, partnerName, link, sender });
 
   useEffect(() => {
     if (state === "idle") return;
@@ -82,9 +153,18 @@ export function CopyMessageButton({ message }: { message: string }) {
       type="button"
       className="admin-small-button"
       title={message}
-      onClick={async () => setState((await copyText(message)) ? "copied" : "failed")}
+      onClick={async () => {
+        if (!sender && needsSender(template)) return setState("sender");
+        setState((await copyText(message)) ? "copied" : "failed");
+      }}
     >
-      {state === "copied" ? "Copied" : state === "failed" ? "Couldn't copy" : "Copy message"}
+      {state === "copied"
+        ? "Copied"
+        : state === "failed"
+          ? "Couldn't copy"
+          : state === "sender"
+            ? "Choose who's sending"
+            : "Copy message"}
     </button>
   );
 }
@@ -114,14 +194,17 @@ export function TemplateEditor({
     <form action={action} className="template-editor">
       <label htmlFor="template">Invite message</label>
       <p className="admin-help">
-        Use <code>{"{name}"}</code> for the guest&rsquo;s name (both names for a couple),{" "}
-        <code>{"{link}"}</code> for their personal link and <code>{"{deadline}"}</code> for the
-        reply-by date. Each row&rsquo;s &ldquo;Copy message&rdquo; button fills these in.
+        Each row&rsquo;s &ldquo;Copy message&rdquo; button fills in: <code>{"{you}"}</code>{" "}
+        (&ldquo;you&rdquo;, or &ldquo;you &amp; Joost&rdquo; for a couple),{" "}
+        <code>{"{name}"}</code> (&ldquo;Priya&rdquo; or &ldquo;Priya &amp; Joost&rdquo;),{" "}
+        <code>{"{other}"}</code> (Wout when Nish is sending, and the other way round),{" "}
+        <code>{"{me}"}</code> (whoever is sending), <code>{"{link}"}</code> (their personal
+        link) and <code>{"{deadline}"}</code> (the reply-by date).
       </p>
       <textarea
         id="template"
         name="template"
-        rows={10}
+        rows={18}
         defaultValue={template}
         maxLength={MESSAGE_TEMPLATE_MAX}
         disabled={!enabled}

@@ -1382,3 +1382,33 @@ html[data-declined="false"] .stay-note {
 tr.invite-sent td {
   background: #f4f7f1;
 }
+
+.sender-switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  flex-wrap: wrap;
+}
+
+.sender-label {
+  font-size: 13px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  margin-right: 4px;
+}
+
+.sender-option {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--ink);
+}
+
+.sender-option:hover {
+  background: #e8edf5;
+}
+
+.sender-option.is-active {
+  background: var(--ink);
+  color: var(--cream);
+}

@@ -5,24 +5,43 @@ import { RSVP_DEADLINE_LABEL } from "@/lib/site";
 export const MESSAGE_TEMPLATE_KEY = "invite_message_template";
 export const MESSAGE_TEMPLATE_MAX = 4000;
 
-export const MESSAGE_PLACEHOLDERS = ["{name}", "{link}", "{deadline}"] as const;
+// Who is sending: Nish and Wout each send from their own phone, so the
+// message names the other one ("Wout and I are getting married").
+export const SENDERS = ["Nish", "Wout"] as const;
+export type Sender = (typeof SENDERS)[number];
 
-export const DEFAULT_MESSAGE_TEMPLATE = `Hi {name}!
+export const DEFAULT_MESSAGE_TEMPLATE = `IT'S HAPPENING! {other} and I are getting married on 14–15 November 2027 at a nature resort in Bengaluru, India. Aaand it wouldn't be the same without {you}! 🌴
 
-We're getting married in Bengaluru on 14–15 November 2027, and we'd love you to be there. Your invitation is here:
+You're going to have an amazing time. Closer to the date we'll share all the details: what to wear, what to expect, what role YOU'LL be playing, and tips for a pre- or post-wedding recovery trip. But before all that, we'd love to know if you can make it.
 
+Please reply by {deadline} using your personal link:
 {link}
 
-Please reply by {deadline}.
+Questions about bringing young children, or anything else? Just let us know!
 
 Love,
-Nish & Wout`;
+Wouter & Nish
 
-// Safe to call from client components: only string work, no server imports
-// beyond the deadline label.
-export function fillMessage(template: string, values: { name: string; link: string }) {
+PS We're arranging where everyone stays on the nights of 14 and 15 November, so please don't book anything for those two nights.`;
+
+// True when the template needs to know who is sending.
+export function needsSender(template: string) {
+  return /\{(me|other)\}/.test(template);
+}
+
+// Pure string work, safe in client components.
+export function fillMessage(
+  template: string,
+  values: { guestName: string; partnerName: string | null; link: string; sender: Sender | null }
+) {
+  const both = values.partnerName ? `${values.guestName} & ${values.partnerName}` : values.guestName;
+  const you = values.partnerName ? `you & ${values.partnerName}` : "you";
+  const other = values.sender ? SENDERS.find((s) => s !== values.sender)! : "";
   return template
-    .replace(/\{name\}/g, values.name)
+    .replace(/\{name\}/g, both)
+    .replace(/\{you\}/g, you)
+    .replace(/\{me\}/g, values.sender ?? "")
+    .replace(/\{other\}/g, other)
     .replace(/\{link\}/g, values.link)
     .replace(/\{deadline\}/g, RSVP_DEADLINE_LABEL);
 }

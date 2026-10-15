@@ -3,8 +3,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { login, logout } from "./actions";
 import { isAdminAuthed } from "@/lib/admin-auth";
 import { inviteTypeOf, inviteUrl, InviteType } from "@/lib/invites";
-import { DEFAULT_MESSAGE_TEMPLATE, MESSAGE_TEMPLATE_KEY, fillMessage } from "@/lib/invite-message";
-import { CopyMessageButton, SentCheckbox, TemplateEditor } from "./invite-tools";
+import { DEFAULT_MESSAGE_TEMPLATE, MESSAGE_TEMPLATE_KEY } from "@/lib/invite-message";
+import { CopyMessageButton, MessageProvider, SentCheckbox, TemplateEditor } from "./invite-tools";
 
 type Rsvp = {
   id: string;
@@ -241,6 +241,7 @@ export default async function AdminPage({
 
       <TemplateEditor template={template} enabled={!templateError} />
 
+      <MessageProvider template={template}>
       <div className="table-scroll">
         <table>
           <thead>
@@ -269,7 +270,11 @@ export default async function AdminPage({
                   <td>{names}</td>
                   <td>{INVITE_TYPE_LABEL[inviteTypeOf(i)]}</td>
                   <td>
-                    <CopyMessageButton message={fillMessage(template, { name: names, link: url })} />
+                    <CopyMessageButton
+                      guestName={i.guest_name}
+                      partnerName={i.partner_name}
+                      link={url}
+                    />
                   </td>
                   <td>
                     <a href={url}>{url}</a>
@@ -285,6 +290,7 @@ export default async function AdminPage({
           </tbody>
         </table>
       </div>
+      </MessageProvider>
     </div>
   );
 }
