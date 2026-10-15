@@ -336,6 +336,9 @@ export default function InviteRsvp({
           <div className="invite-send">
             <SendButton disabled={!ready} />
           </div>
+          {isCouple && !ready && (attending !== "" || partnerAttending !== "") && (
+            <p className="rsvp-hint rsvp-hint-centred">Please answer for both of you to send.</p>
+          )}
         </form>
 
         {!existing && (

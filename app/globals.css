@@ -1317,3 +1317,7 @@ p {
   font-size: 17px;
   color: var(--gold-text);
 }
+
+.rsvp-hint-centred {
+  text-align: center;
+}
