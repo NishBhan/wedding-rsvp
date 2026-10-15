@@ -67,7 +67,7 @@ export async function submitRsvp(
     console.error("RSVP save failed:", error.message);
     return {
       status: "error",
-      message: "Something went wrong on our end. Please try again.",
+      message: "Sorry, something went wrong. Please try again in a moment.",
     };
   }
 
@@ -84,7 +84,7 @@ async function submitInviteRsvp(code: string, formData: FormData): Promise<RsvpS
     found = await getInviteByCode(code);
   } catch (e) {
     if (!(e instanceof InviteLookupError)) throw e;
-    return { status: "error", message: "Something went wrong on our end. Please try again." };
+    return { status: "error", message: "Sorry, something went wrong. Please try again in a moment." };
   }
   if (!found) {
     return {
@@ -149,7 +149,7 @@ async function submitInviteRsvp(code: string, formData: FormData): Promise<RsvpS
     console.error("Invite RSVP save failed:", error.message);
     return {
       status: "error",
-      message: "Something went wrong on our end. Please try again.",
+      message: "Sorry, something went wrong. Please try again in a moment.",
     };
   }
 

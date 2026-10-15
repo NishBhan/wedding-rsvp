@@ -33,10 +33,10 @@ export default function SaveTheDate() {
         <div className="hero-location">BENGALURU, INDIA</div>
 
         <p className="hero-blurb">
-          We know this is far in advance, but for many of you India is a real
-          trip, not just a calendar entry. Since venues and accommodations
-          need to be locked in early, we&apos;re hoping to hear back by{" "}
-          {RSVP_DEADLINE_LABEL}.
+          We know a trip to India is a big one, and not an easy thing to say yes
+          to this far ahead. We also have venues and rooms to book for everyone,
+          and the sooner we know who&rsquo;s coming, the better we can look after
+          you when you&rsquo;re here. Please reply by {RSVP_DEADLINE_LABEL}.
         </p>
 
         <div className="hero-cta">
@@ -47,14 +47,14 @@ export default function SaveTheDate() {
 
         <div className="hero-reminder">
           <p>
-            Need some time to decide? Add a reminder for the{" "}
+            Need time to decide?{" "}
             <a href="/calendar/rsvp-reminder.ics" className="calendar-link">
-              RSVP to your calendar
+              Add a reminder to your calendar
               <CalendarCheckIcon />
             </a>{" "}
             (or{" "}
             <a href={rsvpReminderCalendarUrl()} target="_blank" rel="noopener" className="calendar-link">
-              Google Calendar
+              to Google Calendar
             </a>
             ).
           </p>

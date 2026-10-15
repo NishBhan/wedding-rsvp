@@ -147,7 +147,7 @@ export default function InviteRsvp({
           <OrnamentDivider />
           <h2 className="invite-rsvp-heading">{closedHeading}</h2>
           {state.closed && <p className="rsvp-error">{state.message}</p>}
-          <p>{summary ?? "We didn’t receive a reply from you before replies closed."}</p>
+          <p>{summary ?? "We didn’t hear from you before replies closed."}</p>
           {!state.closed && (
             <p className="rsvp-fine-note">
               If anything has changed, just message Nish or Wout on WhatsApp and
@@ -179,12 +179,12 @@ export default function InviteRsvp({
       const coming = guestComing ? guest : partner;
       const missing = guestComing ? partner : guest;
       heading = `We can’t wait to celebrate with you, ${coming}!`;
-      body = `Your place is saved. ${missing}, we’ll miss you, and there will be a glass raised to you in Bengaluru.`;
+      body = `Your place is saved. ${missing}, we’ll miss you, and we’ll raise a glass to you in Bengaluru.`;
     } else {
       const who = isCouple ? `${guest} & ${partner}` : guest;
       heading = `We’ll miss you, ${who}.`;
       body =
-        "Thank you for telling us, and for telling us early. You’ll be in our hearts on the day, and there will be a glass raised to you in Bengaluru.";
+        "Thank you for telling us, and for telling us early. You’ll be in our hearts on the day, and we’ll raise a glass to you in Bengaluru.";
     }
 
     return (
@@ -228,7 +228,7 @@ export default function InviteRsvp({
         </p>
         {existing && (
           <p className="rsvp-fine-note">
-            {`${replySummary(existing, invite)} Nothing to do unless your plans have changed.`}
+            {`${replySummary(existing, invite)} There’s nothing more to do unless your plans change.`}
           </p>
         )}
 
@@ -325,14 +325,14 @@ export default function InviteRsvp({
         {!existing && (
           <div className="hero-reminder invite-reminder">
             <p>
-              Need a little time to decide? Add a reminder for the{" "}
+              Need time to decide?{" "}
               <a href={`/calendar/rsvp-reminder.ics?code=${invite.code}`} className="calendar-link">
-                RSVP to your calendar
+                Add a reminder to your calendar
                 <CalendarCheckIcon />
               </a>{" "}
               (or{" "}
               <a href={rsvpReminderCalendarUrl(inviteLink)} target="_blank" rel="noopener" className="calendar-link">
-                Google Calendar
+                to Google Calendar
               </a>
               ).
             </p>

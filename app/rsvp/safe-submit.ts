@@ -11,7 +11,7 @@ export async function safeSubmitRsvp(prev: RsvpState, formData: FormData): Promi
     return {
       status: "error",
       message:
-        "We couldn’t reach the server, so your reply hasn’t been sent yet. Please check your connection and try again.",
+        "Your reply hasn’t been sent yet. Please check your internet connection and try again. Your answers are still here.",
     };
   }
 }
