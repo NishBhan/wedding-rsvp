@@ -200,7 +200,7 @@ export default async function AdminPage({
       <h2 style={{ marginTop: 48 }}>Invites</h2>
       <p>
         Add or edit invites in the Supabase <code>invites</code> table. Fill in{" "}
-        <code>partner_name</code> for a couple, tick <code>plus_one_allowed</code> for a single
+        <code>partner_name</code> for a couple, set <code>plus_one_allowed</code> to true for a single
         guest who may bring someone, or leave both empty for a single guest.
       </p>
       <div className="table-scroll">
