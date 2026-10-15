@@ -226,6 +226,8 @@ export default function InviteRsvp({
 
   // Tapping an answer ticks it, which can look final. Until it's sent,
   // say so: any answer on a first reply, or any change to a saved one.
+  // Shown only once Send can be tapped, so it never points at a greyed-out
+  // button (a half-answered couple sees "Please answer for both" instead).
   const unsent = existing
     ? attending !== yesNo(existing.attending) ||
       (isCouple && partnerAttending !== yesNo(existing.partnerAttending)) ||
@@ -339,7 +341,7 @@ export default function InviteRsvp({
 
           {state.status === "error" && <p className="rsvp-error">{state.message}</p>}
 
-          {unsent && state.status !== "error" && (
+          {unsent && ready && state.status !== "error" && (
             <p className="rsvp-unsent">Not sent yet. Tap &ldquo;Send my reply&rdquo; to let us know.</p>
           )}
 
