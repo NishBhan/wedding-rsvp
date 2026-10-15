@@ -203,7 +203,7 @@ export default function InviteRsvp({
           )}
           {anyoneComing && <AttendingDetails />}
           <p className="rsvp-fine-note">
-            {`Plans change, and that’s alright. You can come back to this link and update your reply until ${RSVP_DEADLINE_LABEL}.`}
+            {`Plans change, and that’s alright. You can come back to this link and update your reply on or before ${RSVP_DEADLINE_LABEL}.`}
           </p>
         </div>
       </RsvpSection>
@@ -223,7 +223,7 @@ export default function InviteRsvp({
         </h2>
         <p className="rsvp-deadline">
           {existing
-            ? `You can change it until ${RSVP_DEADLINE_LABEL}`
+            ? `You can change your reply on or before ${RSVP_DEADLINE_LABEL}`
             : `Kindly reply by ${RSVP_DEADLINE_LABEL}`}
         </p>
         {existing && (

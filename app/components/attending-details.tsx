@@ -11,12 +11,12 @@ export default function AttendingDetails() {
   return (
     <>
       <div className="details-panel">
-        <div className="details-panel-label">YOU DON&rsquo;T NEED TO FIGURE OUT THE REST JUST YET</div>
+        <div className="details-panel-label">WE&rsquo;RE TAKING CARE OF YOUR STAY</div>
         <p>
-          The full agenda, along with accommodation, transport and dress guidance, is
-          coming soon, so there&rsquo;s no need to book your travel just yet. If
-          you&rsquo;re thinking of extending your trip into a longer holiday, we&rsquo;re
-          happy to connect you with a travel desk to help plan it.
+          We&rsquo;re arranging where everyone stays on the nights of 14 and 15 November,
+          so please don&rsquo;t book anything for those two nights. If you&rsquo;d like to
+          make a longer holiday of your trip, we&rsquo;re happy to put you in touch with a
+          travel desk.
         </p>
       </div>
       <div className="calendar-link-row">
@@ -32,7 +32,7 @@ export default function AttendingDetails() {
         </a>
       </p>
       {opened && (
-        <p className="saved-note">Your calendar should open with 14 to 16 November 2027 ready to save.</p>
+        <p className="saved-note">Your calendar should open with 14 and 15 November 2027 ready to save.</p>
       )}
     </>
   );

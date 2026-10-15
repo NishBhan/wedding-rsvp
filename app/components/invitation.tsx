@@ -2,6 +2,7 @@ import SiteShell from "./site-shell";
 import AnimatedMonogram from "./animated-monogram";
 import OrnamentDivider from "./ornament-divider";
 import HeroLandscape from "./hero-landscape";
+import PlanningNote from "./planning-note";
 import InviteRsvp from "../rsvp/[code]/invite-rsvp";
 import { RSVP_DEADLINE_LABEL } from "@/lib/site";
 import { inviteUrl, type Invite, type InviteRsvp as ExistingRsvp } from "@/lib/invites";
@@ -86,27 +87,7 @@ export default function Invitation({
 
       <HeroLandscape />
 
-      <section className="planning-note">
-        <div className="planning-note-inner">
-          <OrnamentDivider />
-          <h2>A little note for your planning</h2>
-          <p>
-            We&rsquo;re celebrating over two days and two nights. Things begin on the
-            afternoon of the 14th, from around 3 or 4pm, and carry on through the
-            whole of the 15th.
-          </p>
-          <p>
-            Please plan to arrive in Bengaluru by early afternoon on the 14th, stay
-            with us for the nights of the 14th and the 15th, and set off home on the
-            morning or early afternoon of the 16th.
-          </p>
-          <p className="planning-note-fine">
-            The full agenda is on its way, along with details on where to stay,
-            getting around, what to wear, and ideas for a holiday in India if
-            you&rsquo;d like to make a longer trip of it.
-          </p>
-        </div>
-      </section>
+      <PlanningNote />
     </SiteShell>
   );
 }

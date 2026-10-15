@@ -3,6 +3,7 @@ import SiteShell from "./site-shell";
 import AnimatedMonogram from "./animated-monogram";
 import OrnamentDivider from "./ornament-divider";
 import HeroLandscape from "./hero-landscape";
+import PlanningNote from "./planning-note";
 import CalendarCheckIcon from "./calendar-check-icon";
 import { RSVP_DEADLINE_LABEL, rsvpReminderCalendarUrl } from "@/lib/site";
 
@@ -62,22 +63,7 @@ export default function SaveTheDate() {
 
       <HeroLandscape />
 
-      <section className="planning-note">
-        <div className="planning-note-inner">
-          <OrnamentDivider />
-          <h2>A little note for your planning</h2>
-          <p>
-            Our celebrations will begin on the evening of the 14th and
-            continue through the night of the 15th. Please plan to arrive in
-            Bengaluru by the afternoon of the 14th and depart on the 16th.
-          </p>
-          <p className="planning-note-fine">
-            The full agenda is coming soon, along with details on stay,
-            logistics, dress guidance and everything else you&apos;ll need
-            for the celebrations.
-          </p>
-        </div>
-      </section>
+      <PlanningNote />
     </SiteShell>
   );
 }
