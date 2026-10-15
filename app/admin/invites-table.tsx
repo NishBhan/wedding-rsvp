@@ -75,9 +75,9 @@ export function InvitesTable({
               <th>
                 <span className="visually-hidden">Edit</span>
               </th>
+              <th>Type</th>
               <th>Replied</th>
               {tiersEnabled && <th>Tier</th>}
-              <th>Type</th>
               <th>Personal link</th>
             </tr>
           </thead>
@@ -111,6 +111,7 @@ export function InvitesTable({
                     }}
                   />
                 </td>
+                <td className="invite-type">{r.typeLabel}</td>
                 <td>
                   <span className={`badge ${r.replied ? "yes" : "no"}`}>{r.replied ? "Yes" : "Not yet"}</span>
                 </td>
@@ -119,7 +120,6 @@ export function InvitesTable({
                     <TierSelect inviteId={r.id} tier={r.tier} label={r.names} />
                   </td>
                 )}
-                <td className="invite-type">{r.typeLabel}</td>
                 <td>
                   <a href={r.url}>{r.url}</a>
                 </td>
