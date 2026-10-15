@@ -5,6 +5,7 @@ import { isAdminAuthed } from "@/lib/admin-auth";
 import { inviteTypeOf, inviteUrl, InviteType } from "@/lib/invites";
 import { DEFAULT_MESSAGE_TEMPLATE, MESSAGE_TEMPLATE_KEY } from "@/lib/invite-message";
 import { CopyMessageButton, MessageProvider, SentCheckbox, TemplateEditor } from "./invite-tools";
+import { AddInviteButton, EditInviteButton } from "./invite-editor";
 
 type Rsvp = {
   id: string;
@@ -228,9 +229,9 @@ export default async function AdminPage({
 
       <h2 style={{ marginTop: 48 }}>Invites</h2>
       <p>
-        Add or edit invites in the Supabase <code>invites</code> table. Fill in{" "}
-        <code>partner_name</code> for a couple, set <code>plus_one_allowed</code> to true for a single
-        guest who may bring someone, or leave both empty for a single guest.
+        Add a new invite, or use <strong>Edit</strong> on a row to fix a name or change between
+        Single, Single + 1 and Couple. You&rsquo;ll see exactly what changes before anything is
+        saved, and the guest&rsquo;s link never changes.
       </p>
       {(!sentTracking || templateError) && (
         <p className="error" style={{ marginBottom: 16 }}>
@@ -242,6 +243,9 @@ export default async function AdminPage({
       <TemplateEditor template={template} enabled={!templateError} />
 
       <MessageProvider template={template}>
+      <div className="invites-toolbar">
+        <AddInviteButton />
+      </div>
       <div className="table-scroll">
         <table>
           <thead>
@@ -252,6 +256,9 @@ export default async function AdminPage({
               <th>Message</th>
               <th>Personal link</th>
               <th>Replied</th>
+              <th>
+                <span className="visually-hidden">Edit</span>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -283,6 +290,16 @@ export default async function AdminPage({
                     <span className={`badge ${rsvpByInvite.has(i.id) ? "yes" : "no"}`}>
                       {rsvpByInvite.has(i.id) ? "Yes" : "Not yet"}
                     </span>
+                  </td>
+                  <td>
+                    <EditInviteButton
+                      initial={{
+                        id: i.id,
+                        type: inviteTypeOf(i),
+                        guestName: i.guest_name,
+                        partnerName: i.partner_name ?? "",
+                      }}
+                    />
                   </td>
                 </tr>
               );
