@@ -46,7 +46,7 @@ export function weddingIcs() {
     uid: "wedding-days@nishthaandwouter",
     start: "20271114",
     end: "20271116",
-    summary: "Nishtha & Wouter's Wedding",
+    summary: "Nishtha & Wouter's wedding",
     location: "Bengaluru, India",
     description: WEDDING_DESCRIPTION,
     url: SITE_URL,
@@ -68,7 +68,7 @@ export function rsvpReminderIcs(link: string) {
 
 export const GOOGLE_WEDDING_CALENDAR_URL = `https://calendar.google.com/calendar/render?${new URLSearchParams({
   action: "TEMPLATE",
-  text: "Nishtha & Wouter's Wedding",
+  text: "Nishtha & Wouter's wedding",
   dates: "20271114/20271116",
   location: "Bengaluru, India",
   details: WEDDING_DESCRIPTION,
