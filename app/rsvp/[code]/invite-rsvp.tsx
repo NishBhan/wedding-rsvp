@@ -290,6 +290,9 @@ export default function InviteRsvp({
           {allowsPlusOne && attending === "yes" && (
             <div className="invite-plus-one">
               <p className="rsvp-label">Bringing someone with you?</p>
+              <p className="rsvp-hint">
+                Not sure who yet? Choose &ldquo;Just me&rdquo; for now and add them later.
+              </p>
               <div className="plus-one-grid couple-grid">
                 <Choice name="plusOne" value="yes" current={plusOne} onSelect={setPlusOne} label="Yes" />
                 <Choice
