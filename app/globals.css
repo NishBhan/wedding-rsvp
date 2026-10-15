@@ -1233,6 +1233,7 @@ th {
 /* Admin tables scroll sideways inside their own box on phones instead of
    widening the whole page. */
 .table-scroll {
+  position: relative;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -1411,4 +1412,224 @@ tr.invite-sent td {
 .sender-option.is-active {
   background: var(--ink);
   color: var(--cream);
+}
+
+/* Admin: adding and editing invites */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.invites-toolbar {
+  margin: 0 0 14px;
+}
+
+.editor-dialog {
+  width: min(520px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: #fffdf9;
+  color: var(--ink-dark);
+}
+
+.editor-dialog::backdrop {
+  background: rgba(20, 35, 70, 0.35);
+}
+
+.invite-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  text-align: left;
+}
+
+.invite-editor h3 {
+  margin: 0;
+  font-size: 22px;
+  color: var(--ink);
+}
+
+.invite-editor p {
+  margin: 0;
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+
+.editor-types {
+  border: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.editor-types legend {
+  font-size: 13px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  padding: 0;
+}
+
+.editor-type {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  margin: 0;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.editor-type.is-active {
+  border-color: var(--ink);
+  background: #eef2f8;
+}
+
+.editor-type input {
+  accent-color: var(--ink);
+  width: 18px;
+  height: 18px;
+  margin: 0;
+}
+
+.editor-type span {
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-type small {
+  font-size: 13px;
+  color: #5a6a85;
+}
+
+.editor-changes,
+.editor-warnings {
+  margin: 0;
+  padding: 12px 14px 12px 32px;
+  font-size: 15px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.editor-changes {
+  background: #eef2f8;
+}
+
+.editor-warnings {
+  background: #fbf1dc;
+  color: #6b4a12;
+}
+
+.editor-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Admin: tiers */
+.tier-stats {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: -8px 0 24px;
+}
+
+.tier-stat {
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 100px;
+  background: #fffdf9;
+  font-size: 14px;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.tier-stat.is-done {
+  background: #dfe9df;
+  border-color: #b9cdb9;
+  color: #2f5233;
+}
+
+.invite-filters {
+  display: flex;
+  align-items: center;
+  gap: 12px 16px;
+  flex-wrap: wrap;
+  margin: 0 0 14px;
+  font-size: 14px;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.filter-tabs a,
+.filter-toggle {
+  padding: 6px 12px;
+  border: 1px solid var(--ink);
+  border-radius: 2px;
+  color: var(--ink);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.filter-tabs a[aria-current="page"],
+.filter-toggle[data-on="true"] {
+  background: var(--ink);
+  color: var(--cream);
+}
+
+.filter-count {
+  color: #5a6a85;
+}
+
+.tier-select {
+  padding: 6px 8px;
+  font-family: inherit;
+  font-size: 14px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: #fff;
+  color: var(--ink-dark);
+}
+
+#editor-tier {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 16px;
+}
+
+.template-details {
+  margin: 0 0 24px;
+}
+
+.template-details summary {
+  cursor: pointer;
+  font-size: 13px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin-bottom: 10px;
+}
+
+.template-details:not([open]) summary::after {
+  content: " (tap to edit)";
+  text-transform: none;
+  letter-spacing: 0;
+  color: #5a6a85;
 }
