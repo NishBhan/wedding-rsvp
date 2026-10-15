@@ -85,3 +85,17 @@ create policy "anyone can insert an rsvp"
     and char_length(name) between 1 and 80
     and (plus_one_name is null or char_length(plus_one_name) <= 80)
   );
+
+-- ---------------------------------------------------------------------
+-- Admin: tracking who has been sent their invite, and the message
+-- template used to send it. Both are only read and written by the server
+-- (service role), so neither has any policies.
+-- ---------------------------------------------------------------------
+alter table invites add column if not exists sent_at timestamptz;
+
+create table if not exists admin_settings (
+  key text primary key,
+  value text not null,
+  updated_at timestamptz not null default now()
+);
+alter table admin_settings enable row level security;

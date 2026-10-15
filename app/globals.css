@@ -1331,3 +1331,84 @@ html[data-declined="true"] .stay-note {
 html[data-declined="false"] .stay-note {
   display: block;
 }
+
+/* Admin: invite message and "sent" tracking */
+.template-editor {
+  margin: 0 0 24px;
+}
+
+.template-editor textarea {
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.admin-help {
+  margin: 0 0 10px;
+  font-size: 14px;
+}
+
+.template-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.admin-small-button {
+  margin-top: 0;
+  padding: 8px 12px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.template-actions .admin-small-button {
+  margin-top: 10px;
+}
+
+.sent-cell {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sent-checkbox {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--ink);
+  cursor: pointer;
+}
+
+tr.invite-sent td {
+  background: #f4f7f1;
+}
+
+.sender-switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  flex-wrap: wrap;
+}
+
+.sender-label {
+  font-size: 13px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  margin-right: 4px;
+}
+
+.sender-option {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--ink);
+}
+
+.sender-option:hover {
+  background: #e8edf5;
+}
+
+.sender-option.is-active {
+  background: var(--ink);
+  color: var(--cream);
+}
