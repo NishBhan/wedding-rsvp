@@ -67,9 +67,10 @@ export default function Invitation({
           <p>{OPENING[invite.type]}</p>
           <p>
             We know a trip to India is a big one, and not an easy thing to say yes to
-            this far ahead. We also have venues and rooms to book for everyone, and the
+            this far ahead. Since we need to book venues and rooms for everyone, the
             sooner we know who&rsquo;s coming, the better we can look after you when
-            you&rsquo;re here.{!closed && !existing && ` If you can, let us know by ${RSVP_DEADLINE_LABEL}.`}
+            you&rsquo;re here.
+            {!closed && !existing && ` If you can, please let us know by ${RSVP_DEADLINE_LABEL}.`}
           </p>
           <p className="invite-signoff">
             With love,

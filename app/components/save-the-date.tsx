@@ -35,8 +35,8 @@ export default function SaveTheDate() {
 
         <p className="hero-blurb">
           We know a trip to India is a big one, and not an easy thing to say yes
-          to this far ahead. We also have venues and rooms to book for everyone,
-          and the sooner we know who&rsquo;s coming, the better we can look after
+          to this far ahead. Since we need to book venues and rooms for everyone,
+          the sooner we know who&rsquo;s coming, the better we can look after
           you when you&rsquo;re here. Please reply by {RSVP_DEADLINE_LABEL}.
         </p>
 
