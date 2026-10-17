@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useTransition } from "react";
+import { createContext, useContext, useEffect, useRef, useState, useTransition } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { saveMessageTemplate, setInviteSent, setInviteTier, type TemplateState } from "./actions";
 import { TIERS, tierLabel } from "@/lib/tiers";
@@ -9,6 +9,8 @@ import {
   SENDERS,
   fillMessage,
   needsSender,
+  youFor,
+  type Recipient,
   type Sender,
 } from "@/lib/invite-message";
 
@@ -130,6 +132,8 @@ async function copyText(text: string) {
 }
 
 // Copies one guest's filled-in message, link included, ready to paste.
+// On a couple's invite it first asks who it's going to: both of them in a
+// group chat, or one of them on their own.
 export function CopyMessageButton({
   guestName,
   partnerName,
@@ -141,7 +145,8 @@ export function CopyMessageButton({
 }) {
   const { template, sender } = useContext(MessageContext);
   const [state, setState] = useState<"idle" | "copied" | "failed" | "sender">("idle");
-  const message = fillMessage(template, { guestName, partnerName, link, sender });
+  const [choosing, setChoosing] = useState(false);
+  const dialog = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
     if (state === "idle") return;
@@ -149,34 +154,90 @@ export function CopyMessageButton({
     return () => clearTimeout(t);
   }, [state]);
 
+  useEffect(() => {
+    if (choosing) dialog.current?.showModal();
+  }, [choosing]);
+
+  const copy = async (recipient: Recipient) => {
+    const message = fillMessage(template, { guestName, partnerName, link, sender, recipient });
+    setState((await copyText(message)) ? "copied" : "failed");
+  };
+
+  const close = () => {
+    dialog.current?.close();
+    setChoosing(false);
+  };
+
+  const options: { recipient: Recipient; label: string }[] = partnerName
+    ? [
+        { recipient: "both", label: "Both, in a group chat" },
+        { recipient: "guest", label: `Just ${guestName}` },
+        { recipient: "partner", label: `Just ${partnerName}` },
+      ]
+    : [];
+
   return (
-    <button
-      type="button"
-      className="admin-small-button"
-      title={message}
-      onClick={async () => {
-        if (!sender && needsSender(template)) return setState("sender");
-        setState((await copyText(message)) ? "copied" : "failed");
-      }}
-    >
-      {state === "copied"
-        ? (
-            <>
-              <span className="label-long">Copied</span>
-              <span className="label-short">✓ Done</span>
-            </>
-          )
-        : state === "failed"
-          ? "Couldn't copy"
-          : state === "sender"
-            ? "Choose who's sending"
-            : (
+    <>
+      <button
+        type="button"
+        className="admin-small-button"
+        title={partnerName ? undefined : fillMessage(template, { guestName, partnerName, link, sender })}
+        onClick={async () => {
+          if (!sender && needsSender(template)) return setState("sender");
+          if (partnerName) return setChoosing(true);
+          await copy("both");
+        }}
+      >
+        {state === "copied"
+          ? (
               <>
-                <span className="label-long">Copy message</span>
-                <span className="label-short">Copy</span>
+                <span className="label-long">Copied</span>
+                <span className="label-short">✓ Done</span>
               </>
-            )}
-    </button>
+            )
+          : state === "failed"
+            ? "Couldn't copy"
+            : state === "sender"
+              ? "Choose who's sending"
+              : (
+                <>
+                  <span className="label-long">Copy message</span>
+                  <span className="label-short">Copy</span>
+                </>
+              )}
+      </button>
+      {choosing && (
+        <dialog ref={dialog} className="editor-dialog" onClose={() => setChoosing(false)}>
+          <div className="invite-editor">
+            <h3>Who are you sending this to?</h3>
+            <div className="recipient-options">
+              {options.map((o) => (
+                <button
+                  key={o.recipient}
+                  type="button"
+                  className="recipient-option"
+                  onClick={async () => {
+                    close();
+                    await copy(o.recipient);
+                  }}
+                >
+                  <strong>{o.label}</strong>
+                  <small>
+                    &hellip;it wouldn&rsquo;t be the same without{" "}
+                    {youFor(guestName, partnerName, o.recipient)}!
+                  </small>
+                </button>
+              ))}
+            </div>
+            <div className="editor-actions">
+              <button type="button" className="admin-small-button sender-option" onClick={close}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </dialog>
+      )}
+    </>
   );
 }
 
@@ -208,9 +269,9 @@ export function TemplateEditor({
       </label>
       <p className="admin-help">
         Each row&rsquo;s &ldquo;Copy message&rdquo; button fills in: <code>{"{you}"}</code>{" "}
-        (&ldquo;you&rdquo;, or &ldquo;you &amp; Joost&rdquo; for a couple, partner&rsquo;s first
-        name only),{" "}
-        <code>{"{name}"}</code> (&ldquo;Priya&rdquo; or &ldquo;Priya &amp; Joost&rdquo;),{" "}
+        (&ldquo;you&rdquo; for a single guest; for a couple, &ldquo;you two, Priya &amp;
+        Joost&rdquo; in a group chat or &ldquo;you &amp; Joost&rdquo; when sent to Priya alone;
+        Copy asks which), <code>{"{name}"}</code> (whoever it&rsquo;s going to),{" "}
         <code>{"{other}"}</code> (Wout when Nish is sending, and the other way round),{" "}
         <code>{"{me}"}</code> (whoever is sending), <code>{"{link}"}</code> (their personal
         link) and <code>{"{deadline}"}</code> (the reply-by date).

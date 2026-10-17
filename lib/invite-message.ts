@@ -22,26 +22,53 @@ Questions about bringing young children, or anything else? Just let us know!
 Love,
 Wouter & Nish
 
-PS We're arranging where everyone stays on the nights of 14 and 15 November, so please don't book anything for those two nights.`;
+PS We're arranging where everyone stays on the nights of 14 and 15 November, so please don't book anything for those two nights. If you'd like to extend your stay and explore more of India, let us know and we'll help you plan it through our travel desk.`;
 
 // True when the template needs to know who is sending.
 export function needsSender(template: string) {
   return /\{(me|other)\}/.test(template);
 }
 
+// Who a couple's message is going to: both of them in a group chat, or
+// one of them on their own.
+export type Recipient = "both" | "guest" | "partner";
+
+const firstName = (name: string) => name.trim().split(/\s+/)[0] ?? "";
+
+// What {you} becomes: "you" for a single guest; for a couple, "you two,
+// Priya & Joost" in a group chat, or "you & Joost" when sent to Priya
+// alone. First names only.
+export function youFor(guestName: string, partnerName: string | null, recipient: Recipient) {
+  if (!partnerName) return "you";
+  const guest = firstName(guestName);
+  const partner = firstName(partnerName);
+  if (recipient === "both") return `you two, ${guest} & ${partner}`;
+  return `you & ${recipient === "guest" ? partner : guest}`;
+}
+
 // Pure string work, safe in client components.
 export function fillMessage(
   template: string,
-  values: { guestName: string; partnerName: string | null; link: string; sender: Sender | null }
+  values: {
+    guestName: string;
+    partnerName: string | null;
+    link: string;
+    sender: Sender | null;
+    recipient?: Recipient;
+  }
 ) {
-  const both = values.partnerName ? `${values.guestName} & ${values.partnerName}` : values.guestName;
-  // First name only: "you & Hannah", not "you & Hannah Riordan".
-  const partnerFirst = values.partnerName?.trim().split(/\s+/)[0];
-  const you = partnerFirst ? `you & ${partnerFirst}` : "you";
+  const recipient = values.recipient ?? "both";
+  const name = !values.partnerName
+    ? values.guestName
+    : recipient === "guest"
+      ? values.guestName
+      : recipient === "partner"
+        ? values.partnerName
+        : `${values.guestName} & ${values.partnerName}`;
   const other = values.sender ? SENDERS.find((s) => s !== values.sender)! : "";
   return template
-    .replace(/\{name\}/g, both)
-    .replace(/\{you\}/g, you)
+    .replace(/\{name\}/g, name)
+    .replace(/\{you\}/g, youFor(values.guestName, values.partnerName, recipient))
     .replace(/\{me\}/g, values.sender ?? "")
     .replace(/\{other\}/g, other)
     .replace(/\{link\}/g, values.link)
