@@ -1745,3 +1745,36 @@ tr.invite-sent td {
     min-width: 84px;
   }
 }
+
+/* Admin: who a couple's message is going to */
+.recipient-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.recipient-option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  margin: 0;
+  padding: 12px 14px;
+  text-align: left;
+  text-transform: none;
+  letter-spacing: 0;
+  background: #fff;
+  color: var(--ink-dark);
+  border: 1px solid var(--line);
+  font-size: 16px;
+}
+
+.recipient-option:hover {
+  background: #eef2f8;
+  border-color: var(--ink);
+}
+
+.recipient-option small {
+  font-size: 14px;
+  color: #5a6a85;
+}
