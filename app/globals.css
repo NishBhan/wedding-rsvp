@@ -1778,3 +1778,45 @@ tr.invite-sent td {
   font-size: 14px;
   color: #5a6a85;
 }
+
+/* Admin: rooms */
+.sql-snippet {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid var(--line);
+  color: var(--ink-dark);
+  font-size: 13px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+.invites-table .room-input {
+  width: 120px;
+  padding: 6px 8px;
+  font-family: inherit;
+  font-size: 14px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: #fff;
+  color: var(--ink-dark);
+}
+
+.invites-table .room-input:focus {
+  outline: none;
+  border-color: var(--ink);
+}
+
+.invites-table .room-input[data-state="saved"] {
+  border-color: #8fb48f;
+}
+
+.rooms-table td:nth-child(2) {
+  white-space: nowrap;
+}
+
+.badge.declined {
+  background: #ece9e2;
+  color: #5a5a5a;
+}

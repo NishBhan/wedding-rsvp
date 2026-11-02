@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CopyMessageButton, SentCheckbox, TierSelect } from "./invite-tools";
+import { CopyMessageButton, RoomInput, SentCheckbox, TierSelect } from "./invite-tools";
 import { EditInviteButton } from "./invite-editor";
 import type { InviteType } from "@/lib/invites";
 
@@ -16,6 +16,9 @@ export type InviteTableRow = {
   tier: number | null;
   sent: boolean;
   replied: boolean;
+  // People coming on this invite: null if they haven't replied yet.
+  coming: number | null;
+  room: string | null;
 };
 
 const fold = (s: string) =>
@@ -33,12 +36,16 @@ export function InvitesTable({
   total,
   tiersEnabled,
   sentTracking,
+  roomsEnabled,
+  roomNames,
   emptyMessage,
 }: {
   rows: InviteTableRow[];
   total: number;
   tiersEnabled: boolean;
   sentTracking: boolean;
+  roomsEnabled: boolean;
+  roomNames: string[];
   emptyMessage: string;
 }) {
   const [query, setQuery] = useState("");
@@ -79,12 +86,13 @@ export function InvitesTable({
               </th>
               <th>Replied</th>
               <th>Personal link</th>
+              {roomsEnabled && <th>Room</th>}
             </tr>
           </thead>
           <tbody>
             {shown.length === 0 && (
               <tr>
-                <td colSpan={8}>{q ? `No one called “${query.trim()}” here.` : emptyMessage}</td>
+                <td colSpan={9}>{q ? `No one called “${query.trim()}” here.` : emptyMessage}</td>
               </tr>
             )}
             {shown.map((r) => (
@@ -118,16 +126,34 @@ export function InvitesTable({
                   />
                 </td>
                 <td>
-                  <span className={`badge ${r.replied ? "yes" : "no"}`}>{r.replied ? "Yes" : "Not yet"}</span>
+                  {r.coming === null ? (
+                    <span className="badge no">Not yet</span>
+                  ) : r.coming > 0 ? (
+                    <span className="badge yes">{r.coming} coming</span>
+                  ) : (
+                    <span className="badge declined">Not coming</span>
+                  )}
                 </td>
                 <td>
                   <a href={r.url}>{r.url}</a>
                 </td>
+                {roomsEnabled && (
+                  <td>
+                    <RoomInput inviteId={r.id} room={r.room} label={r.names} listId="room-names" />
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      {roomsEnabled && (
+        <datalist id="room-names">
+          {roomNames.map((n) => (
+            <option key={n} value={n} />
+          ))}
+        </datalist>
+      )}
     </>
   );
 }

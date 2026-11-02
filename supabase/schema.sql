@@ -102,3 +102,7 @@ alter table admin_settings enable row level security;
 
 -- Admin: invite tiers (T1, T2, ...) for sending invites in batches.
 alter table invites add column if not exists tier smallint check (tier between 1 and 9);
+
+-- Admin: room allotments. One room per invite (the guest, their partner or
+-- plus-one share it); invites given the same room name share that room.
+alter table invites add column if not exists room text check (char_length(room) <= 60);
