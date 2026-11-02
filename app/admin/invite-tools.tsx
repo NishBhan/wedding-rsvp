@@ -145,10 +145,12 @@ export function CopyMessageButton({
   guestName,
   partnerName,
   link,
+  deadline,
 }: {
   guestName: string;
   partnerName: string | null;
   link: string;
+  deadline: string;
 }) {
   const { template, sender } = useContext(MessageContext);
   const [state, setState] = useState<"idle" | "copied" | "failed" | "sender">("idle");
@@ -166,7 +168,7 @@ export function CopyMessageButton({
   }, [choosing]);
 
   const copy = async (recipient: Recipient) => {
-    const message = fillMessage(template, { guestName, partnerName, link, sender, recipient });
+    const message = fillMessage(template, { guestName, partnerName, link, sender, recipient, deadline });
     setState((await copyText(message)) ? "copied" : "failed");
   };
 
@@ -188,7 +190,7 @@ export function CopyMessageButton({
       <button
         type="button"
         className="admin-small-button"
-        title={partnerName ? undefined : fillMessage(template, { guestName, partnerName, link, sender })}
+        title={partnerName ? undefined : fillMessage(template, { guestName, partnerName, link, sender, deadline })}
         onClick={async () => {
           if (!sender && needsSender(template)) return setState("sender");
           if (partnerName) return setChoosing(true);

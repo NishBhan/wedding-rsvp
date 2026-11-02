@@ -1825,3 +1825,71 @@ tr.invite-sent td {
 .invites-table .invite-link {
   white-space: nowrap;
 }
+
+/* Admin: bulk tier / reply-by changes */
+.bulk-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  background: #eef2f8;
+  border: 1px solid var(--line);
+}
+
+.bulk-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.bulk-label {
+  margin: 0;
+}
+
+.bulk-date {
+  padding: 6px 8px;
+  font-family: inherit;
+  font-size: 14px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: #fff;
+  color: var(--ink-dark);
+}
+
+tr.invite-selected td {
+  background: #e6ecf6;
+}
+
+.invite-reply-by {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 400;
+  color: #8a6a2f;
+}
+
+.invite-search .admin-small-button {
+  margin-top: 0;
+}
+
+.invites-table .select-col {
+  background: #f6efdf;
+  border-right: 1px solid var(--line);
+}
+
+.select-head {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.invites-table .select-checkbox {
+  accent-color: var(--gold);
+}
+
+.reply-closed {
+  color: var(--error);
+  font-weight: 600;
+}

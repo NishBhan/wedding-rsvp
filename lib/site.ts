@@ -35,27 +35,71 @@ function londonDate(iso: string) {
   return { day: Number(get("day")), month: get("month"), year: Number(get("year")) };
 }
 
-const deadline = londonDate(RSVP_CLOSES_AT);
+// Everything that follows from a reply-by date: what guests read, when
+// replies lock, and the calendar reminder (an all-day event the day before).
+export type Deadline = {
+  label: string; // "15 November 2026" (no ordinals, so it reads the same in translation)
+  closesAt: string; // ISO time replies lock: the end of that day in London
+  reminderStart: string;
+  reminderEnd: string;
+  reminderTitle: string;
+};
 
-// "15 November 2026" (no ordinals, so dates read the same in translation)
-export const RSVP_DEADLINE_LABEL = `${deadline.day} ${deadline.month} ${deadline.year}`;
-
-// The reminder sits on the day before the deadline, as an all-day event.
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-const deadlineDay = new Date(Date.UTC(deadline.year, MONTHS.indexOf(deadline.month), deadline.day));
 const ymd = (d: Date) => d.toISOString().slice(0, 10).replace(/-/g, "");
-export const RSVP_REMINDER_START = ymd(new Date(deadlineDay.getTime() - 86400000));
-export const RSVP_REMINDER_END = ymd(deadlineDay);
-export const RSVP_REMINDER_TITLE = `Reply to Nish & Wout's wedding invitation by ${deadline.day} ${deadline.month}`;
+
+// 23:59:59 on that day in London, as a UTC time (London is UTC+1 in summer).
+function londonEndOfDay(year: number, monthIndex: number, day: number) {
+  const utc = Date.UTC(year, monthIndex, day, 23, 59, 59);
+  const londonHour = Number(
+    new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/London", hour: "numeric", hourCycle: "h23" }).format(
+      new Date(utc)
+    )
+  );
+  const offsetHours = londonHour === 23 ? 0 : londonHour + 1;
+  return new Date(utc - offsetHours * 3600000).toISOString();
+}
+
+function deadlineOn(year: number, monthIndex: number, day: number, closesAt?: string): Deadline {
+  const dayDate = new Date(Date.UTC(year, monthIndex, day));
+  return {
+    label: `${day} ${MONTHS[monthIndex]} ${year}`,
+    closesAt: closesAt ?? londonEndOfDay(year, monthIndex, day),
+    reminderStart: ymd(new Date(dayDate.getTime() - 86400000)),
+    reminderEnd: ymd(dayDate),
+    reminderTitle: `Reply to Nish & Wout's wedding invitation by ${day} ${MONTHS[monthIndex]}`,
+  };
+}
+
+const deadline = londonDate(RSVP_CLOSES_AT);
+export const DEFAULT_DEADLINE = deadlineOn(
+  deadline.year,
+  MONTHS.indexOf(deadline.month),
+  deadline.day,
+  RSVP_CLOSES_AT
+);
+
+// A reply-by date set on one invite ("2026-11-30"), or the site-wide one.
+export const REPLY_BY_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
+export function deadlineFor(replyBy: string | null | undefined): Deadline {
+  const m = replyBy ? REPLY_BY_PATTERN.exec(replyBy) : null;
+  if (!m) return DEFAULT_DEADLINE;
+  return deadlineOn(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+}
+
+export const RSVP_DEADLINE_LABEL = DEFAULT_DEADLINE.label;
+export const RSVP_REMINDER_START = DEFAULT_DEADLINE.reminderStart;
+export const RSVP_REMINDER_END = DEFAULT_DEADLINE.reminderEnd;
+export const RSVP_REMINDER_TITLE = DEFAULT_DEADLINE.reminderTitle;
 
 // Prefilled Google Calendar link for the "not ready to RSVP yet" reminder.
 // Personal-link guests get their own link in the details so the reminder
 // takes them straight back to their invite.
-export function rsvpReminderCalendarUrl(link: string = SITE_URL) {
+export function rsvpReminderCalendarUrl(link: string = SITE_URL, d: Deadline = DEFAULT_DEADLINE) {
   const params = new URLSearchParams({
     action: "TEMPLATE",
-    text: RSVP_REMINDER_TITLE,
-    dates: `${RSVP_REMINDER_START}/${RSVP_REMINDER_END}`,
+    text: d.reminderTitle,
+    dates: `${d.reminderStart}/${d.reminderEnd}`,
     location: link,
     details: `Reply here: ${link}`,
   });

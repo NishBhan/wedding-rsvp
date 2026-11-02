@@ -55,6 +55,8 @@ export function fillMessage(
     link: string;
     sender: Sender | null;
     recipient?: Recipient;
+    // The invite's reply-by date as guests read it; site-wide by default.
+    deadline?: string;
   }
 ) {
   const recipient = values.recipient ?? "both";
@@ -72,5 +74,5 @@ export function fillMessage(
     .replace(/\{me\}/g, values.sender ?? "")
     .replace(/\{other\}/g, other)
     .replace(/\{link\}/g, values.link)
-    .replace(/\{deadline\}/g, RSVP_DEADLINE_LABEL);
+    .replace(/\{deadline\}/g, values.deadline ?? RSVP_DEADLINE_LABEL);
 }

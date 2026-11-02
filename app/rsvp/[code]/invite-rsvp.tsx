@@ -9,7 +9,7 @@ import AttendingDetails from "../../components/attending-details";
 import OrnamentDivider from "../../components/ornament-divider";
 import FishLeap from "../../components/fish-leap";
 import CalendarCheckIcon from "../../components/calendar-check-icon";
-import { RSVP_DEADLINE_LABEL, rsvpReminderCalendarUrl } from "@/lib/site";
+import { deadlineFor, rsvpReminderCalendarUrl } from "@/lib/site";
 import type { Invite, InviteRsvp } from "@/lib/invites";
 
 type YesNo = "yes" | "no" | "";
@@ -114,6 +114,7 @@ export default function InviteRsvp({
   inviteLink: string;
   closed: boolean;
 }) {
+  const deadline = deadlineFor(invite.replyBy);
   const [state, formAction] = useFormState(safeSubmitRsvp, initialState);
   const [attending, setAttending] = useState<YesNo>(yesNo(existing?.attending));
   const [partnerAttending, setPartnerAttending] = useState<YesNo>(
@@ -213,7 +214,7 @@ export default function InviteRsvp({
           )}
           {anyoneComing && <AttendingDetails />}
           <p className="rsvp-fine-note">
-            {`Plans change, and that’s alright. You can come back to this link and update your reply on or before ${RSVP_DEADLINE_LABEL}.`}
+            {`Plans change, and that’s alright. You can come back to this link and update your reply on or before ${deadline.label}.`}
           </p>
         </div>
       </RsvpSection>
@@ -244,8 +245,8 @@ export default function InviteRsvp({
         </h2>
         <p className="rsvp-deadline">
           {existing
-            ? `You can change your reply on or before ${RSVP_DEADLINE_LABEL}`
-            : `Please reply by ${RSVP_DEADLINE_LABEL}`}
+            ? `You can change your reply on or before ${deadline.label}`
+            : `Please reply by ${deadline.label}`}
         </p>
         {existing && (
           <p className="rsvp-fine-note">
@@ -362,7 +363,7 @@ export default function InviteRsvp({
                 <CalendarCheckIcon />
               </a>{" "}
               (or{" "}
-              <a href={rsvpReminderCalendarUrl(inviteLink)} target="_blank" rel="noopener" className="calendar-link">
+              <a href={rsvpReminderCalendarUrl(inviteLink, deadline)} target="_blank" rel="noopener" className="calendar-link">
                 to Google Calendar
               </a>
               ).

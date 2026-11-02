@@ -4,7 +4,7 @@ import InviteNotFound from "./invite-not-found";
 import InviteUnavailable from "./invite-unavailable";
 import { getInviteForPage, InviteLookupError, inviteUrl } from "@/lib/invites";
 import { rsvpsAreOpen } from "@/lib/rsvp-window";
-import { OG_IMAGE, RSVP_DEADLINE_LABEL } from "@/lib/site";
+import { OG_IMAGE, deadlineFor } from "@/lib/site";
 
 // Always read fresh: edits to the invites table show up immediately, and a
 // guest reopening their link sees the answer they last gave.
@@ -23,7 +23,7 @@ export async function generateMetadata({
     const { invite } = found;
     const names = invite.partnerName ? `${invite.guestName} & ${invite.partnerName}` : invite.guestName;
     const title = `${names}, you're invited to Nishtha & Wouter's wedding`;
-    const description = `14–15 November 2027, Bengaluru, India. Please reply by ${RSVP_DEADLINE_LABEL}.`;
+    const description = `14–15 November 2027, Bengaluru, India. Please reply by ${deadlineFor(invite.replyBy).label}.`;
     return {
       title,
       description,
@@ -50,5 +50,12 @@ export default async function InvitePage({ params }: { params: { code: string } 
     throw e;
   }
   if (!found) return <InviteNotFound />;
-  return <Invitation invite={found.invite} existing={found.existing} closed={!rsvpsAreOpen()} />;
+  const closesAt = deadlineFor(found.invite.replyBy).closesAt;
+  return (
+    <Invitation
+      invite={found.invite}
+      existing={found.existing}
+      closed={!rsvpsAreOpen(new Date(), closesAt)}
+    />
+  );
 }

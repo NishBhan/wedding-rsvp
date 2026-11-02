@@ -4,7 +4,7 @@ import { createServerClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getInviteByCode, InviteLookupError } from "@/lib/invites";
 import { rsvpsAreOpen, RSVPS_CLOSED_MID_FORM_MESSAGE } from "@/lib/rsvp-window";
-import { MAX_NAME_LENGTH } from "@/lib/site";
+import { MAX_NAME_LENGTH, deadlineFor } from "@/lib/site";
 
 const TOO_LONG_MESSAGE = `Names can be up to ${MAX_NAME_LENGTH} characters, so please shorten it slightly.`;
 
@@ -22,6 +22,10 @@ export async function submitRsvp(
   _prevState: RsvpState,
   formData: FormData
 ): Promise<RsvpState> {
+  const inviteCode = String(formData.get("inviteCode") || "").trim();
+  // Personal links lock on their own invite's deadline (checked there).
+  if (inviteCode) return submitInviteRsvp(inviteCode, formData);
+
   // The lock: nothing is written after the deadline, whichever page the
   // reply came from or however long the form was left open.
   if (!rsvpsAreOpen()) {
@@ -32,9 +36,6 @@ export async function submitRsvp(
   const attending = formData.get("attending") === "yes";
   const plusOne = formData.get("plusOne") === "yes";
   const plusOneName = String(formData.get("plusOneName") || "").trim();
-  const inviteCode = String(formData.get("inviteCode") || "").trim();
-
-  if (inviteCode) return submitInviteRsvp(inviteCode, formData);
 
   if (!name) {
     return { status: "error", message: "Please enter your name so we know who is replying." };
@@ -93,6 +94,10 @@ async function submitInviteRsvp(code: string, formData: FormData): Promise<RsvpS
     };
   }
   const { invite } = found;
+
+  if (!rsvpsAreOpen(new Date(), deadlineFor(invite.replyBy).closesAt)) {
+    return { status: "error", closed: true, message: RSVPS_CLOSED_MID_FORM_MESSAGE };
+  }
 
   const attending = formData.get("attending") === "yes";
   const partnerAttending = formData.get("partnerAttending") === "yes";
