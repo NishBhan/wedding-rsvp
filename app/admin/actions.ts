@@ -15,6 +15,7 @@ import { MESSAGE_TEMPLATE_KEY, MESSAGE_TEMPLATE_MAX } from "@/lib/invite-message
 import { planInviteChange, type InviteInput } from "@/lib/admin-invites";
 import { inviteUrl } from "@/lib/invites";
 import { parseTier } from "@/lib/tiers";
+import { roomKey, tidyRoom } from "@/lib/rooms";
 
 const LOGGED_OUT = "You've been logged out. Refresh the page and log in again.";
 
@@ -109,6 +110,31 @@ export async function setInviteTier(inviteId: string, raw: number | null): Promi
   }
   revalidatePath("/admin");
   return null;
+}
+
+// Sets an invite's room (empty clears it) and returns the room as saved.
+export async function setInviteRoom(
+  inviteId: string,
+  raw: string
+): Promise<{ ok: true; room: string | null } | { ok: false; error: string }> {
+  if (!isAdminAuthed()) return { ok: false, error: LOGGED_OUT };
+  if (!/^[\w-]{1,64}$/.test(inviteId)) return { ok: false, error: "Unknown invite." };
+  let room = tidyRoom(raw);
+  if (room === "invalid") return { ok: false, error: "Keep the room name short." };
+  const supabase = createAdminClient();
+  // Reuse the spelling of a room already in use, so "villa 1" joins "Villa 1".
+  if (room) {
+    const { data: inUse } = await supabase.from("invites").select("room").not("room", "is", null);
+    const match = (inUse ?? []).find((r) => r.room && roomKey(r.room) === roomKey(room as string));
+    if (match?.room) room = match.room;
+  }
+  const { error } = await supabase.from("invites").update({ room }).eq("id", inviteId);
+  if (error) {
+    console.error("setInviteRoom failed:", error.message);
+    return { ok: false, error: "Couldn't save. Try again." };
+  }
+  revalidatePath("/admin");
+  return { ok: true, room };
 }
 
 export type InvitePreview =

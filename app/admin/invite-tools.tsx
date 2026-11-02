@@ -2,7 +2,14 @@
 
 import { createContext, useContext, useEffect, useRef, useState, useTransition } from "react";
 import { useFormState, useFormStatus } from "react-dom";
-import { saveMessageTemplate, setInviteSent, setInviteTier, type TemplateState } from "./actions";
+import {
+  saveMessageTemplate,
+  setInviteRoom,
+  setInviteSent,
+  setInviteTier,
+  type TemplateState,
+} from "./actions";
+import { ROOM_MAX } from "@/lib/rooms";
 import { TIERS, tierLabel } from "@/lib/tiers";
 import {
   MESSAGE_TEMPLATE_MAX,
@@ -338,6 +345,86 @@ export function TierSelect({
           </option>
         ))}
       </select>
+      {error && <span className="error">{error}</span>}
+    </span>
+  );
+}
+
+// Room for one invite. Saves when you leave the field or press Enter;
+// suggestions come from rooms already in use (one shared list per page).
+export function RoomInput({
+  inviteId,
+  room,
+  label,
+  listId,
+}: {
+  inviteId: string;
+  room: string | null;
+  label: string;
+  listId: string;
+}) {
+  const [value, setValue] = useState(room ?? "");
+  const [saved, setSaved] = useState(room ?? "");
+  const [state, setState] = useState<"idle" | "saved">("idle");
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+  const cancelled = useRef(false);
+
+  useEffect(() => {
+    setValue(room ?? "");
+    setSaved(room ?? "");
+  }, [room]);
+
+  useEffect(() => {
+    if (state !== "saved") return;
+    const t = setTimeout(() => setState("idle"), 1500);
+    return () => clearTimeout(t);
+  }, [state]);
+
+  const save = () => {
+    if (cancelled.current) {
+      cancelled.current = false;
+      return;
+    }
+    const next = value.replace(/\s+/g, " ").trim();
+    if (next === saved) return setValue(next);
+    setError(null);
+    startTransition(async () => {
+      const result = await setInviteRoom(inviteId, next);
+      if (!result.ok) {
+        setValue(saved);
+        setError(result.error);
+      } else {
+        setValue(result.room ?? "");
+        setSaved(result.room ?? "");
+        setState("saved");
+      }
+    });
+  };
+
+  return (
+    <span className="sent-cell">
+      <input
+        type="text"
+        className="room-input"
+        list={listId}
+        value={value}
+        maxLength={ROOM_MAX}
+        placeholder="Room"
+        disabled={pending}
+        data-state={state}
+        aria-label={`Room for ${label}`}
+        onChange={(e) => setValue(e.target.value)}
+        onBlur={save}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") e.currentTarget.blur();
+          if (e.key === "Escape") {
+            cancelled.current = true;
+            setValue(saved);
+            e.currentTarget.blur();
+          }
+        }}
+      />
       {error && <span className="error">{error}</span>}
     </span>
   );

@@ -8,6 +8,7 @@ import { MessageProvider, TemplateEditor } from "./invite-tools";
 import { AddInviteButton } from "./invite-editor";
 import { InvitesTable } from "./invites-table";
 import { parseTier, tierLabel } from "@/lib/tiers";
+import { roomKey } from "@/lib/rooms";
 
 type Rsvp = {
   id: string;
@@ -29,6 +30,7 @@ type InviteRow = {
   plus_one_allowed: boolean;
   sent_at?: string | null;
   tier?: number | null;
+  room?: string | null;
 };
 
 const INVITE_TYPE_LABEL: Record<InviteType, string> = {
@@ -43,7 +45,7 @@ export const metadata: Metadata = { robots: { index: false, follow: false } };
 export default async function AdminPage({
   searchParams,
 }: {
-  searchParams: { error?: string; tier?: string; unsent?: string };
+  searchParams: { error?: string; tier?: string; unsent?: string; noroom?: string };
 }) {
   if (!isAdminAuthed()) {
     return (
@@ -70,23 +72,28 @@ export default async function AdminPage({
     .select("*")
     .order("submitted_at", { ascending: false });
 
-  // sent_at and admin_settings only exist once the latest schema.sql has
-  // been run. Until then the page still works, just without sent tracking.
+  // sent_at, tier and room each exist once the matching line of
+  // schema.sql has been run. Until then the page works without that part.
   const INVITE_COLUMNS = "id, code, guest_name, partner_name, plus_one_allowed";
-  const loadInvites = (columns: string) =>
-    supabase.from("invites").select(columns).order("guest_name", { ascending: true });
-  let sentTracking = true;
-  let tiersEnabled = true;
-  let invitesResult = await loadInvites(`${INVITE_COLUMNS}, sent_at, tier`);
-  if (invitesResult.error) {
-    tiersEnabled = false;
-    invitesResult = await loadInvites(`${INVITE_COLUMNS}, sent_at`);
-  }
-  if (invitesResult.error) {
-    sentTracking = false;
-    invitesResult = await loadInvites(INVITE_COLUMNS);
-  }
-  const { data: inviteData, error: inviteError } = invitesResult;
+  const hasColumn = async (column: string) =>
+    !(await supabase.from("invites").select(column).limit(1)).error;
+  const [sentTracking, tiersEnabled, roomsEnabled] = await Promise.all([
+    hasColumn("sent_at"),
+    hasColumn("tier"),
+    hasColumn("room"),
+  ]);
+  const columns = [
+    INVITE_COLUMNS,
+    sentTracking && "sent_at",
+    tiersEnabled && "tier",
+    roomsEnabled && "room",
+  ]
+    .filter(Boolean)
+    .join(", ");
+  const { data: inviteData, error: inviteError } = await supabase
+    .from("invites")
+    .select(columns)
+    .order("guest_name", { ascending: true });
 
   const { data: templateRow, error: templateError } = await supabase
     .from("admin_settings")
@@ -157,18 +164,54 @@ export default async function AdminPage({
       ? null
       : parseTier(searchParams.tier);
   const unsentOnly = sentTracking && searchParams.unsent === "1";
+
+  // Rooms: how many people on each invite are coming (0 if they've said no,
+  // null if they haven't replied), and who still needs a room.
+  const comingOn = (i: InviteRow) => {
+    const r = rsvpByInvite.get(i.id);
+    if (!r) return null;
+    return (r.attending ? 1 : 0) + (r.attending && r.plus_one ? 1 : 0) + (r.partner_attending === true ? 1 : 0);
+  };
+  const needsRoom = (i: InviteRow) => !i.room && (comingOn(i) ?? 0) > 0;
+  const needsRoomCount = roomsEnabled ? invites.filter(needsRoom).length : 0;
+  const noRoomOnly = roomsEnabled && searchParams.noroom === "1";
+
   const shownInvites = invites.filter(
     (i) =>
       (tierFilter === undefined || tierFilter === "invalid" || tierOf(i) === tierFilter) &&
-      (!unsentOnly || !i.sent_at)
+      (!unsentOnly || !i.sent_at) &&
+      (!noRoomOnly || needsRoom(i))
   );
-  const filterHref = (tier: number | null | undefined, unsent: boolean) => {
+  const filterHref = (tier: number | null | undefined, unsent: boolean, noRoom = noRoomOnly) => {
     const q = new URLSearchParams();
     if (tier !== undefined) q.set("tier", tier === null ? "none" : String(tier));
     if (unsent) q.set("unsent", "1");
+    if (noRoom) q.set("noroom", "1");
     const qs = q.toString();
     return `/admin${qs ? `?${qs}` : ""}#invites`;
   };
+
+  // Rooms summary: every room in use, who's in it and how many are coming.
+  const rooms = new Map<string, { name: string; invites: InviteRow[] }>();
+  for (const i of invites) {
+    if (!i.room) continue;
+    const key = roomKey(i.room);
+    if (!rooms.has(key)) rooms.set(key, { name: i.room, invites: [] });
+    rooms.get(key)!.invites.push(i);
+  }
+  const roomList = Array.from(rooms.values()).sort((a, b) =>
+    a.name.localeCompare(b.name, "en", { numeric: true })
+  );
+  const roomNames = roomList.map((r) => r.name);
+
+  // The exact SQL still needed for any feature that's switched off.
+  const missingSql = [
+    !sentTracking && "alter table invites add column if not exists sent_at timestamptz;",
+    templateError &&
+      "create table if not exists admin_settings (\n  key text primary key,\n  value text not null,\n  updated_at timestamptz not null default now()\n);\nalter table admin_settings enable row level security;",
+    !tiersEnabled && "alter table invites add column if not exists tier smallint check (tier between 1 and 9);",
+    !roomsEnabled && "alter table invites add column if not exists room text check (char_length(room) <= 60);",
+  ].filter((line): line is string => Boolean(line));
   const activeTier = tierFilter === "invalid" ? undefined : tierFilter;
 
   return (
@@ -231,18 +274,22 @@ export default async function AdminPage({
       )}
 
       <h2 id="invites" className="admin-section-title">Invites</h2>
-      {(!sentTracking || !tiersEnabled || templateError) && (
-        <p className="error" style={{ marginBottom: 16 }}>
-          To save the message, tick off sent invites and use tiers, run the latest{" "}
-          <code>supabase/schema.sql</code> in the Supabase SQL Editor, then refresh this page.
-        </p>
+      {missingSql.length > 0 && (
+        <div className="error" style={{ marginBottom: 16 }}>
+          <p style={{ margin: 0 }}>
+            Some features are switched off until the database is updated. Run this in the Supabase
+            SQL Editor, then refresh this page. It only adds things; no replies or guests are
+            touched.
+          </p>
+          <pre className="sql-snippet">{missingSql.join("\n\n")}</pre>
+        </div>
       )}
 
       <MessageProvider template={template}>
         <div className="invites-toolbar">
           <AddInviteButton defaultTier={tiersEnabled ? (activeTier ?? null) : undefined} />
         </div>
-        {(tiersEnabled || sentTracking) && (
+        {(tiersEnabled || sentTracking || roomsEnabled) && (
           <nav className="invite-filters" aria-label="Filter invites">
             {tiersEnabled && (
               <div className="filter-tabs">
@@ -272,13 +319,31 @@ export default async function AdminPage({
                 <span aria-hidden="true">{unsentOnly ? "☑" : "☐"}</span> Not sent yet only
               </a>
             )}
+            {roomsEnabled && (
+              <a
+                className="filter-toggle"
+                href={filterHref(activeTier, unsentOnly, !noRoomOnly)}
+                data-on={noRoomOnly ? "true" : undefined}
+              >
+                <span aria-hidden="true">{noRoomOnly ? "☑" : "☐"}</span> Coming, no room yet (
+                {needsRoomCount})
+              </a>
+            )}
           </nav>
         )}
         <InvitesTable
           total={invites.length}
           tiersEnabled={tiersEnabled}
           sentTracking={sentTracking}
-          emptyMessage={unsentOnly ? "Everyone here has been sent their invite." : "No invites here yet."}
+          roomsEnabled={roomsEnabled}
+          roomNames={roomNames}
+          emptyMessage={
+            noRoomOnly
+              ? "Everyone coming has a room."
+              : unsentOnly
+                ? "Everyone here has been sent their invite."
+                : "No invites here yet."
+          }
           rows={shownInvites.map((i) => ({
             id: i.id,
             url: inviteUrl(i.code),
@@ -290,6 +355,8 @@ export default async function AdminPage({
             tier: tierOf(i),
             sent: Boolean(i.sent_at),
             replied: rsvpByInvite.has(i.id),
+            coming: comingOn(i),
+            room: i.room ?? null,
           }))}
         />
       </MessageProvider>
@@ -298,6 +365,55 @@ export default async function AdminPage({
         You&rsquo;ll see exactly what changes before anything is saved, and the guest&rsquo;s link
         never changes.
       </p>
+
+      {roomsEnabled && (
+        <>
+          <h2 id="rooms" className="admin-section-title">
+            Rooms
+          </h2>
+          <p className="admin-help">
+            {roomList.length} {roomList.length === 1 ? "room" : "rooms"} in use,{" "}
+            {roomList.reduce((n, r) => n + r.invites.reduce((m, i) => m + (comingOn(i) ?? 0), 0), 0)} people
+            placed. {needsRoomCount > 0 ? (
+              <a href={filterHref(undefined, false, true)}>
+                {needsRoomCount} {needsRoomCount === 1 ? "invite" : "invites"} coming without a room
+              </a>
+            ) : (
+              "Everyone coming has a room."
+            )}
+          </p>
+          {roomList.length > 0 && (
+            <div className="table-scroll">
+              <table className="rooms-table">
+                <thead>
+                  <tr>
+                    <th>Room</th>
+                    <th>People coming</th>
+                    <th>Who</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {roomList.map((room) => (
+                    <tr key={room.name}>
+                      <td className="invite-names">{room.name}</td>
+                      <td>{room.invites.reduce((n, i) => n + (comingOn(i) ?? 0), 0)}</td>
+                      <td>
+                        {room.invites
+                          .map((i) => {
+                            const c = comingOn(i);
+                            const status = c === null ? "not replied" : c === 0 ? "not coming" : `${c} coming`;
+                            return `${inviteNames(i)} (${status})`;
+                          })
+                          .join("; ")}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
+      )}
 
       <h2 className="admin-section-title">Replies</h2>
       <a className="export-link" href="/admin/export">
