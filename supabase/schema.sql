@@ -106,3 +106,8 @@ alter table invites add column if not exists tier smallint check (tier between 1
 -- Admin: room allotments. One room per invite (the guest, their partner or
 -- plus-one share it); invites given the same room name share that room.
 alter table invites add column if not exists room text check (char_length(room) <= 60);
+
+-- Admin: an invite's own reply-by date. Empty means the site-wide date.
+-- It sets what the guest reads, their calendar reminder and when their
+-- replies lock (end of that day, London time).
+alter table invites add column if not exists reply_by date;

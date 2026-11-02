@@ -1,9 +1,4 @@
-import {
-  SITE_URL,
-  RSVP_REMINDER_END,
-  RSVP_REMINDER_START,
-  RSVP_REMINDER_TITLE,
-} from "./site";
+import { SITE_URL, DEFAULT_DEADLINE, type Deadline } from "./site";
 
 /* Calendar files, served from real URLs (app/calendar/*) rather than
    built in the browser: iPhone Safari and the WhatsApp in-app browser open
@@ -55,12 +50,12 @@ export function weddingIcs() {
 
 // All-day reminder on the day before the RSVP deadline, linking back to
 // the guest's own invite when there is one.
-export function rsvpReminderIcs(link: string) {
+export function rsvpReminderIcs(link: string, d: Deadline = DEFAULT_DEADLINE) {
   return ics({
     uid: "rsvp-reminder@nishthaandwouter",
-    start: RSVP_REMINDER_START,
-    end: RSVP_REMINDER_END,
-    summary: RSVP_REMINDER_TITLE,
+    start: d.reminderStart,
+    end: d.reminderEnd,
+    summary: d.reminderTitle,
     description: `Reply here: ${link}`,
     url: link,
   });

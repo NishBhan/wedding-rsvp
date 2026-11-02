@@ -13,6 +13,9 @@ export type Invite = {
   type: InviteType;
   guestName: string;
   partnerName: string | null;
+  // This invite's own reply-by date ("2026-11-30"), or null for the
+  // site-wide one.
+  replyBy: string | null;
 };
 
 export type InviteRsvp = {
@@ -28,6 +31,7 @@ type InviteRow = {
   guest_name: string;
   partner_name: string | null;
   plus_one_allowed: boolean;
+  reply_by?: string | null;
 };
 
 export function inviteTypeOf(row: Pick<InviteRow, "partner_name" | "plus_one_allowed">): InviteType {
@@ -54,11 +58,12 @@ export async function getInviteByCode(
   if (!/^[a-z0-9-]{4,64}$/.test(code)) return null;
 
   const supabase = createAdminClient();
-  const { data, error } = await supabase
-    .from("invites")
-    .select("id, code, guest_name, partner_name, plus_one_allowed")
-    .eq("code", code)
-    .maybeSingle();
+  const columns = "id, code, guest_name, partner_name, plus_one_allowed";
+  const lookup = (cols: string) => supabase.from("invites").select(cols).eq("code", code).maybeSingle();
+  // reply_by exists once its schema.sql line has been run.
+  let result = await lookup(`${columns}, reply_by`);
+  if (result.error) result = await lookup(columns);
+  const { data, error } = result;
 
   if (error) {
     console.error("getInviteByCode failed:", error.message);
@@ -66,13 +71,14 @@ export async function getInviteByCode(
   }
   if (!data) return null;
 
-  const row = data as InviteRow;
+  const row = data as unknown as InviteRow;
   const invite: Invite = {
     id: row.id,
     code: row.code,
     type: inviteTypeOf(row),
     guestName: row.guest_name.trim(),
     partnerName: row.partner_name?.trim() || null,
+    replyBy: row.reply_by ?? null,
   };
 
   const { data: rsvp, error: rsvpError } = await supabase

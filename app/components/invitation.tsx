@@ -4,7 +4,7 @@ import OrnamentDivider from "./ornament-divider";
 import HeroLandscape from "./hero-landscape";
 import PlanningNote from "./planning-note";
 import InviteRsvp from "../rsvp/[code]/invite-rsvp";
-import { RSVP_DEADLINE_LABEL } from "@/lib/site";
+import { deadlineFor } from "@/lib/site";
 import { inviteUrl, type Invite, type InviteRsvp as ExistingRsvp } from "@/lib/invites";
 
 // The letter's first paragraph, written for each kind of invite: a couple
@@ -70,7 +70,7 @@ export default function Invitation({
             this far ahead. Since we need to book venues and rooms for everyone, the
             sooner we know who&rsquo;s coming, the better we can look after you when
             you&rsquo;re here.
-            {!closed && !existing && ` If you can, please let us know by ${RSVP_DEADLINE_LABEL}.`}
+            {!closed && !existing && ` If you can, please let us know by ${deadlineFor(invite.replyBy).label}.`}
           </p>
           <p className="invite-signoff">
             With love,

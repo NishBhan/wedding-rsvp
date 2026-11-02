@@ -9,6 +9,8 @@ import { AddInviteButton } from "./invite-editor";
 import { InvitesTable } from "./invites-table";
 import { parseTier, tierLabel } from "@/lib/tiers";
 import { roomKey } from "@/lib/rooms";
+import { deadlineFor } from "@/lib/site";
+import { rsvpsAreOpen } from "@/lib/rsvp-window";
 
 type Rsvp = {
   id: string;
@@ -31,6 +33,7 @@ type InviteRow = {
   sent_at?: string | null;
   tier?: number | null;
   room?: string | null;
+  reply_by?: string | null;
 };
 
 const INVITE_TYPE_LABEL: Record<InviteType, string> = {
@@ -45,7 +48,14 @@ export const metadata: Metadata = { robots: { index: false, follow: false } };
 export default async function AdminPage({
   searchParams,
 }: {
-  searchParams: { error?: string; tier?: string; unsent?: string; noroom?: string };
+  searchParams: {
+    error?: string;
+    tier?: string;
+    unsent?: string;
+    noroom?: string;
+    type?: string;
+    show?: string;
+  };
 }) {
   if (!isAdminAuthed()) {
     return (
@@ -77,16 +87,18 @@ export default async function AdminPage({
   const INVITE_COLUMNS = "id, code, guest_name, partner_name, plus_one_allowed";
   const hasColumn = async (column: string) =>
     !(await supabase.from("invites").select(column).limit(1)).error;
-  const [sentTracking, tiersEnabled, roomsEnabled] = await Promise.all([
+  const [sentTracking, tiersEnabled, roomsEnabled, replyByEnabled] = await Promise.all([
     hasColumn("sent_at"),
     hasColumn("tier"),
     hasColumn("room"),
+    hasColumn("reply_by"),
   ]);
   const columns = [
     INVITE_COLUMNS,
     sentTracking && "sent_at",
     tiersEnabled && "tier",
     roomsEnabled && "room",
+    replyByEnabled && "reply_by",
   ]
     .filter(Boolean)
     .join(", ");
@@ -164,6 +176,7 @@ export default async function AdminPage({
       ? null
       : parseTier(searchParams.tier);
   const unsentOnly = sentTracking && searchParams.unsent === "1";
+  const activeTier = tierFilter === "invalid" ? undefined : tierFilter;
 
   // Rooms: how many people on each invite are coming (0 if they've said no,
   // null if they haven't replied), and who still needs a room.
@@ -176,20 +189,52 @@ export default async function AdminPage({
   const needsRoomCount = roomsEnabled ? invites.filter(needsRoom).length : 0;
   const noRoomOnly = roomsEnabled && searchParams.noroom === "1";
 
+  // Type (?type=couple, plus_one or solo) and reply status. By default the
+  // list leaves out invites where nobody is coming; ?show=declined shows
+  // just those, ?show=all shows everyone.
+  const INVITE_TYPES: InviteType[] = ["couple", "plus_one", "solo"];
+  const typeFilter = INVITE_TYPES.find((t) => t === searchParams.type);
+  const show: "active" | "declined" | "all" =
+    searchParams.show === "declined" || searchParams.show === "all" ? searchParams.show : "active";
+  const declined = (i: InviteRow) => comingOn(i) === 0;
+  const matchesShow = (i: InviteRow) =>
+    show === "all" ? true : show === "declined" ? declined(i) : !declined(i);
+
   const shownInvites = invites.filter(
     (i) =>
       (tierFilter === undefined || tierFilter === "invalid" || tierOf(i) === tierFilter) &&
       (!unsentOnly || !i.sent_at) &&
-      (!noRoomOnly || needsRoom(i))
+      (!noRoomOnly || needsRoom(i)) &&
+      (!typeFilter || inviteTypeOf(i) === typeFilter) &&
+      matchesShow(i)
   );
-  const filterHref = (tier: number | null | undefined, unsent: boolean, noRoom = noRoomOnly) => {
+  type View = {
+    tier: number | null | undefined;
+    unsent: boolean;
+    noRoom: boolean;
+    type: InviteType | undefined;
+    show: "active" | "declined" | "all";
+  };
+  const hrefWith = (changes: Partial<View>) => {
+    const v: View = {
+      tier: activeTier,
+      unsent: unsentOnly,
+      noRoom: noRoomOnly,
+      type: typeFilter,
+      show,
+      ...changes,
+    };
     const q = new URLSearchParams();
-    if (tier !== undefined) q.set("tier", tier === null ? "none" : String(tier));
-    if (unsent) q.set("unsent", "1");
-    if (noRoom) q.set("noroom", "1");
+    if (v.tier !== undefined) q.set("tier", v.tier === null ? "none" : String(v.tier));
+    if (v.unsent) q.set("unsent", "1");
+    if (v.noRoom) q.set("noroom", "1");
+    if (v.type) q.set("type", v.type);
+    if (v.show !== "active") q.set("show", v.show);
     const qs = q.toString();
     return `/admin${qs ? `?${qs}` : ""}#invites`;
   };
+  const filterHref = (tier: number | null | undefined, unsent: boolean, noRoom = noRoomOnly) =>
+    hrefWith({ tier, unsent, noRoom });
 
   // Rooms summary: every room in use, who's in it and how many are coming.
   const rooms = new Map<string, { name: string; invites: InviteRow[] }>();
@@ -211,8 +256,8 @@ export default async function AdminPage({
       "create table if not exists admin_settings (\n  key text primary key,\n  value text not null,\n  updated_at timestamptz not null default now()\n);\nalter table admin_settings enable row level security;",
     !tiersEnabled && "alter table invites add column if not exists tier smallint check (tier between 1 and 9);",
     !roomsEnabled && "alter table invites add column if not exists room text check (char_length(room) <= 60);",
+    !replyByEnabled && "alter table invites add column if not exists reply_by date;",
   ].filter((line): line is string => Boolean(line));
-  const activeTier = tierFilter === "invalid" ? undefined : tierFilter;
 
   return (
     <div className="admin-wrap">
@@ -289,6 +334,37 @@ export default async function AdminPage({
         <div className="invites-toolbar">
           <AddInviteButton defaultTier={tiersEnabled ? (activeTier ?? null) : undefined} />
         </div>
+        <nav className="invite-filters" aria-label="Filter by reply and type">
+          <div className="filter-tabs">
+            {(
+              [
+                ["active", "Coming or not replied", invites.filter((i) => !declined(i)).length],
+                ["declined", "Not coming", invites.filter(declined).length],
+                ["all", "Everyone", invites.length],
+              ] as const
+            ).map(([value, label, count]) => (
+              <a key={value} href={hrefWith({ show: value })} aria-current={show === value ? "page" : undefined}>
+                {label} ({count})
+              </a>
+            ))}
+          </div>
+          <div className="filter-tabs">
+            <a href={hrefWith({ type: undefined })} aria-current={!typeFilter ? "page" : undefined}>
+              All types
+            </a>
+            {(
+              [
+                ["couple", "Couples"],
+                ["plus_one", "Singles + 1"],
+                ["solo", "Singles"],
+              ] as const
+            ).map(([value, label]) => (
+              <a key={value} href={hrefWith({ type: value })} aria-current={typeFilter === value ? "page" : undefined}>
+                {label} ({invites.filter((i) => inviteTypeOf(i) === value).length})
+              </a>
+            ))}
+          </div>
+        </nav>
         {(tiersEnabled || sentTracking || roomsEnabled) && (
           <nav className="invite-filters" aria-label="Filter invites">
             {tiersEnabled && (
@@ -336,9 +412,12 @@ export default async function AdminPage({
           tiersEnabled={tiersEnabled}
           sentTracking={sentTracking}
           roomsEnabled={roomsEnabled}
+          replyByEnabled={replyByEnabled}
           roomNames={roomNames}
           emptyMessage={
-            noRoomOnly
+            show === "declined"
+              ? "No one here has said they can't come."
+              : noRoomOnly
               ? "Everyone coming has a room."
               : unsentOnly
                 ? "Everyone here has been sent their invite."
@@ -357,6 +436,9 @@ export default async function AdminPage({
             replied: rsvpByInvite.has(i.id),
             coming: comingOn(i),
             room: i.room ?? null,
+            replyBy: i.reply_by ?? null,
+            deadlineLabel: deadlineFor(i.reply_by).label,
+            closed: !rsvpsAreOpen(new Date(), deadlineFor(i.reply_by).closesAt),
           }))}
         />
       </MessageProvider>

@@ -16,6 +16,7 @@ import { planInviteChange, type InviteInput } from "@/lib/admin-invites";
 import { inviteUrl } from "@/lib/invites";
 import { parseTier } from "@/lib/tiers";
 import { roomKey, tidyRoom } from "@/lib/rooms";
+import { REPLY_BY_PATTERN } from "@/lib/site";
 
 const LOGGED_OUT = "You've been logged out. Refresh the page and log in again.";
 
@@ -135,6 +136,56 @@ export async function setInviteRoom(
   }
   revalidatePath("/admin");
   return { ok: true, room };
+}
+
+// London's date today as "2026-11-02", for refusing reply-by dates in the past.
+function londonToday() {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/London",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+}
+
+function validReplyBy(raw: unknown): string | null | "invalid" | "past" {
+  if (raw === null || raw === "" || raw === undefined) return null;
+  const value = String(raw);
+  const m = REPLY_BY_PATTERN.exec(value);
+  if (!m) return "invalid";
+  const d = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])));
+  if (d.toISOString().slice(0, 10) !== value) return "invalid";
+  return value < londonToday() ? "past" : value;
+}
+
+export type BulkChange = { tier: number | null } | { replyBy: string | null };
+
+// Sets the tier, or the reply-by date, on several invites at once (after
+// the admin has confirmed). Returns an error message or null.
+export async function bulkUpdateInvites(ids: string[], change: BulkChange): Promise<string | null> {
+  if (!isAdminAuthed()) return LOGGED_OUT;
+  if (!Array.isArray(ids) || ids.length === 0) return "Select at least one invite.";
+  if (ids.length > 500 || !ids.every((id) => typeof id === "string" && /^[\w-]{1,64}$/.test(id))) {
+    return "Unknown invite.";
+  }
+  let update: Record<string, number | string | null>;
+  if ("tier" in change) {
+    const tier = parseTier(change.tier);
+    if (tier === "invalid") return "Unknown tier.";
+    update = { tier };
+  } else {
+    const replyBy = validReplyBy(change.replyBy);
+    if (replyBy === "invalid") return "Choose a valid date.";
+    if (replyBy === "past") return "That date has already passed. Choose today or later.";
+    update = { reply_by: replyBy };
+  }
+  const { error } = await createAdminClient().from("invites").update(update).in("id", ids);
+  if (error) {
+    console.error("bulkUpdateInvites failed:", error.message);
+    return "Couldn't save. Nothing was changed. Try again in a moment.";
+  }
+  revalidatePath("/admin");
+  return null;
 }
 
 export type InvitePreview =
