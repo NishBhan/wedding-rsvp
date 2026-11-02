@@ -991,8 +991,9 @@ button:disabled {
 }
 
 /* Admin page */
+/* Wide enough on desktop for the whole invites table, Room included. */
 .admin-wrap {
-  max-width: 960px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 40px 20px;
 }
@@ -1819,4 +1820,8 @@ tr.invite-sent td {
 .badge.declined {
   background: #ece9e2;
   color: #5a5a5a;
+}
+
+.invites-table .invite-link {
+  white-space: nowrap;
 }

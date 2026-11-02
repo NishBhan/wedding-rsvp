@@ -135,7 +135,9 @@ export function InvitesTable({
                   )}
                 </td>
                 <td>
-                  <a href={r.url}>{r.url}</a>
+                  <a href={r.url} className="invite-link">
+                    {r.url.replace(/^https?:\/\/(www\.)?/, "")}
+                  </a>
                 </td>
                 {roomsEnabled && (
                   <td>
