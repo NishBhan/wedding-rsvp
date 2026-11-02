@@ -85,8 +85,8 @@ export function InvitesTable({
                 <span className="visually-hidden">Edit</span>
               </th>
               <th>Replied</th>
-              {roomsEnabled && <th>Room</th>}
               <th>Personal link</th>
+              {roomsEnabled && <th>Room</th>}
             </tr>
           </thead>
           <tbody>
@@ -134,14 +134,14 @@ export function InvitesTable({
                     <span className="badge declined">Not coming</span>
                   )}
                 </td>
+                <td>
+                  <a href={r.url}>{r.url}</a>
+                </td>
                 {roomsEnabled && (
                   <td>
                     <RoomInput inviteId={r.id} room={r.room} label={r.names} listId="room-names" />
                   </td>
                 )}
-                <td>
-                  <a href={r.url}>{r.url}</a>
-                </td>
               </tr>
             ))}
           </tbody>
